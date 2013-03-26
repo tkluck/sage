@@ -10,6 +10,7 @@ if [ -z "$MAKEFLAGS" ]; then
     unset MAKEFLAGS
 fi
 . "$SAGE_ROOT/src/bin/sage-env"
+unset SAGE_ENV_SOURCED
 PYTHONPATH="$SAGE_LOCAL/lib/python"
 if [ -n "$SAGE_PATH" ]; then
     PYTHONPATH="$SAGE_PATH:$PYTHONPATH"
