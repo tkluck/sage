@@ -1,0 +1,35 @@
+#dev-lang/python:2.7         readline sqlite sage
+dev-db/sqlite               extensions threadsafe
+dev-lang/python	            readline sqlite sage ssl xml threads
+dev-lang/R 		    -jpeg -png
+dev-libs/boost              python
+dev-python/cvxopt           -dsdp glpk
+dev-python/cython	    -numpy
+dev-python/mpmath           -gmp
+dev-python/numpy            lapack
+dev-python/gdmodule         png
+dev-util/pkgconfig          internal-glib
+media-gfx/tachyon           png opengl
+media-libs/gd               jpeg png
+sci-libs/flint              ntl
+sci-libs/linbox             sage
+sci-mathematics/maxima      ecls
+sci-mathematics/eclib       -pari24
+sci-mathematics/lcalc       pari -pari24
+sci-mathematics/pari        data gmp sage
+sci-mathematics/polybori    sage
+sci-mathematics/sage-baselayout	testsuite
+sci-mathematics/sage-doc	html
+sci-mathematics/sage		testsuite
+sci-mathematics/singular    -libsingular -python
+sci-mathematics/sympow      -pari24
+#dev-lang/R                  -jpg -png
+#sci-libs/linbox             ntl
+#sci-mathematics/glpk        gmp
+#sci-mathematics/pari        gmp
+#sci-mathematics/polybori    gd
+################################################
+# Recomended flags for optional dependency jmol
+################################################
+sci-chemistry/jmol client-only
+sys-libs/zlib minizip

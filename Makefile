@@ -1,175 +1,132 @@
-# Main Makefile for Sage.
+SAGE_ROOT="${PWD}"
+SAGE_LOCAL=${SAGE_ROOT}/local
+PORTAGE_DIR=build/portage
 
-# The default target ("all") builds Sage and the whole (HTML) documentation.
+# This makefile takes care of the following:
+#  1. install Portage Prefix into $SAGE_LOCAL (this is the bootstrap target)
+#  2. copy any available spkg files to where portage can find them (this is the local_packages target)
+#  3. install all spkg files that are needed for sage -b (this is the sage_package_dependencies target)
+#  4. install libcsage (this is the libcsage target)
+#  5. perform sage -b (this is the sage target)
+#  6. install all other packages (also the sage target)
+#  7. perform sage -docbuild all html (this is the sage-doc target)
+
+SAGE_VERSION_PREFIX==
+SAGE_VERSION_SUFFIX=-`${SAGE_ROOT}/build/portage/checked_out_version`
+
+all: sage sage-starts
+
+bootstrap: local/bin/emerge \
+           local/bin/sage \
+           local/etc/portage/make.profile \
+           local/etc/make.conf \
+           local/etc/portage/categories \
+           local/portage \
+           local/usr
+
 #
-# Target "build" just builds Sage.
-#
-# See below for targets to build the documentation in other formats,
-# to run various types of test suites, and to remove parts of the build etc.
+# installing emerge is just ./configure; make; make install. Here, we have
+# split that into several steps/targets, but maybe that's unnecessary
+${PORTAGE_DIR}/src/config.log: ${PORTAGE_DIR}/src/autogen.sh
+	(cd ${PORTAGE_DIR}/src && ./autogen.sh) 
+	(cd ${PORTAGE_DIR}/src && ./configure --prefix=${SAGE_LOCAL} --with-offset-prefix=${SAGE_LOCAL} --with-portage-user=${USER} --with-portage-group=${USER} --with-extra-path=/usr/local/bin:/usr/bin:/bin )
+local/bin/emerge: ${PORTAGE_DIR}/src/config.log
+	# install fails when it can't make certain symbolic links, so let's delete them if they exist
+	rm -f ${SAGE_LOCAL}/etc/make.globals
+	(cd ${PORTAGE_DIR}/src && make && make install)
 
-PIPE = build/pipestatus
+# make sure sage is in our path when we need it
+local/bin/sage:
+	(cd ${SAGE_LOCAL}/bin && ln -sf ../../sage) 
 
+# the make.profile configuration directory contains compiler flags etc that are optimized
+# for the host's specific architecture.
+local/etc/portage/make.profile:
+	mkdir -p ${SAGE_LOCAL}/etc/portage 
+	# TODO: find out by what logic lmonade knows which profile to select
+	(cd ${SAGE_LOCAL}/etc/portage  && ln -sf ../../../build/portage/profiles/lmnd/linux/amd64 make.profile)
+# the portage/categories file should contain a list of all ebuild categories. Those are the
+# subdirectories of the local/portage directory
+local/etc/portage/categories: build/portage/categories
+	mkdir -p ${SAGE_LOCAL}/etc/portage 
+	cp ${PORTAGE_DIR}/categories local/etc/portage
 
-all: start doc  # indirectly depends on build
+local/etc/make.conf: build/portage/make.conf
+	# make.conf has no access to variables defined in make.globals. As a workaround, we
+	# substitute ${CONFIGURE_EPREFIX} manually.
+	# TODO: this only works if the path does not contains the + character!!!
+	cat ${PORTAGE_DIR}/make.conf | sed 's+$${CONFIGURE_EPREFIX}'+${SAGE_LOCAL}+g > local/etc/make.conf
 
-build:
-	@mkdir -p logs/pkgs
-	cd build && \
-	"../$(PIPE)" \
-		"env SAGE_PARALLEL_SPKG_BUILD='$(SAGE_PARALLEL_SPKG_BUILD)' ./install all 2>&1" \
-		"tee -a ../logs/install.log"
-	./sage -b
+# the local/portage directory contains all the information about the packages
+local/portage:
+	ln -sf ../build/portage/ebuilds local/portage
+    
+# this is a workaround: some parts of portage seem to expect ${EPREFIX} as the prefix,
+# others expect ${EPREFIX}/usr. I just copied this workaround from lmonade
+local/usr:
+	(cd ${SAGE_LOCAL} && ln -sf . usr)
 
-# ssl: build Sage, and also install pyOpenSSL. This is necessary for
-# running the secure notebook. This make target requires internet
-# access. Note that this requires that your system have OpenSSL
-# libraries and headers installed. See README.txt for more
-# information.
-ssl: all
-	./sage -i pyopenssl
+# install the extcode to local/share/sage/ext by just copying them
+# Sage also expects the symlink devel/ext -> devel/ext-main
+extcode: local/share/sage/ext
+local/share/sage/ext:
+	rm -rf local/share/sage/ext
+	mkdir -p ${SAGE_LOCAL}/share/sage
+	cp -r ${SAGE_ROOT}/src/ext local/share/sage/ext
 
-build-serial: SAGE_PARALLEL_SPKG_BUILD = no
-build-serial: build
+# install the scripts to local/bin by just copying them
+scripts: local/bin/sage_fortran
+	cp ${SAGE_ROOT}/src/bin/* ${SAGE_LOCAL}/bin
+# the old makefile does some magic to find fortran. Here, we just wrap
+# the system version
+local/bin/sage_fortran:
+	mkdir -p ${SAGE_LOCAL}/bin
+	(echo '#!/bin/sh'; echo 'gfortran "$$@"') > ${SAGE_LOCAL}/bin/sage_fortran
+	chmod a+x ${SAGE_LOCAL}/bin/sage_fortran
 
-# Start Sage if the file local/etc/sage-started.txt does not exist
-# (i.e. when we just installed Sage for the first time).
-start: build
-	[ -f local/etc/sage-started.txt ] || local/bin/sage-starts
+libcsage: local/lib/libcsage.so
+local/lib/libcsage.so: sage_package_dependencies
+	(cd ${SAGE_ROOT}/src/c_lib && ${SAGE_ROOT}/sage -sh -c scons -Q install)
+	(cd ${SAGE_ROOT}/local/include && ln -sf ../../src/c_lib/include csage)
+	(cd ${SAGE_ROOT}/local/lib && ln -sf ../../src/c_lib/libcsage.so)
 
-# You can choose to have the built HTML version of the documentation link to
-# the PDF version. To do so, you need to build both the HTML and PDF versions.
-# To have the HTML version link to the PDF version, do
-#
-# $ ./sage --docbuild all html
-# $ ./sage --docbuild all pdf
-#
-# For more information on the docbuild utility, do
-#
-# $ ./sage --docbuild -H
-doc: doc-html
+# the sage ebuild depends exactly on all things that are needed for libcsage and for
+# sage -b to work
+# We use the --oneshot option to make sure emerge does not hold on to this package
+# in case of a downgrade (which would make the downgrade fail)
+sage_package_dependencies: local_packages extcode scripts bootstrap 
+	${SAGE_LOCAL}/bin/emerge --noreplace --oneshot --deep --update --keep-going --jobs 4 ${SAGE_VERSION_PREFIX}legacy-spkg/sage${SAGE_VERSION_SUFFIX}
 
-doc-html: build
-	$(PIPE) "./sage --docbuild --no-pdf-links all html $(SAGE_DOCBUILD_OPTS) 2>&1" "tee -a logs/dochtml.log"
+# after building sage, we install all other packages by emerging the sage-full
+# ebuild. Some of those packages actually depend on sage, and conversely sage
+# depends on some of them at runtime. So we keep this in a single target.
+# We use the --oneshot option to make sure emerge does not hold on to this package
+# in case of a downgrade (which would make the downgrade fail)
+sage: extcode scripts sage_package_dependencies libcsage
+	ln -sf sage-main ${SAGE_ROOT}/devel/sage
+	${SAGE_ROOT}/sage -b
+	${SAGE_LOCAL}/bin/emerge --noreplace --oneshot --deep --update --keep-going --jobs 4 ${SAGE_VERSION_PREFIX}legacy-spkg/sage-full${SAGE_VERSION_SUFFIX}
 
-doc-html-mathjax: build
-	$(PIPE) "./sage --docbuild --no-pdf-links all html -j $(SAGE_DOCBUILD_OPTS) 2>&1" "tee -a logs/dochtml.log"
+# the sage-docs are necessary for some of the doctests
+# it is, however, extremely memory-intensive to build them
+sage-doc: sage
+	${SAGE_ROOT}/sage -docbuild all html
 
-# Keep target 'doc-html-jsmath' for backwards compatibility.
-doc-html-jsmath: doc-html-mathjax
+# this is a script that checks, after an update, whether sage still
+# starts, and displays bug-reporting instructions otherwise
+sage-starts: local/etc/sage-started.txt
+local/etc/sage-started.txt: sage
+	${SAGE_LOCAL}/bin/sage-starts
 
-doc-pdf: build
-	$(PIPE) "./sage --docbuild all pdf $(SAGE_DOCBUILD_OPTS) 2>&1" "tee -a logs/docpdf.log"
-
-doc-clean:
-	@echo "Deleting devel/sage/doc/output..."
-	rm -rf devel/sage/doc/output
-
-clean:
-	@echo "Deleting spkg/build..."
-	rm -rf spkg/build
-	@echo "Deleting spkg/archive..."
-	rm -rf spkg/archive
-
-distclean: clean
-	@echo "Deleting all remaining traces of builds, tests etc. ..."
-	rm -rf local
-	rm -f spkg/Makefile
-	rm -rf spkg/installed
-	rm -rf spkg/logs
-	rm -rf spkg/optional
-	rm -f install.log
-	rm -f dochtml.log docpdf.log
-	rm -f test.log testall.log testlong.log ptest.log ptestlong.log
-	rm -f start.log
-	rm -f spkg/parallel_make.cfg
-	rm -rf dist
-	rm -rf devel
-	rm -rf doc
-	rm -rf examples
-	rm -rf sage-python
-	rm -rf matplotlibrc
-	rm -rf tmp
-	rm -f .BUILDSTART
-
-micro_release:
-	bash -c ". spkg/bin/sage-env && local/bin/sage-micro_release"
-
-text-expand:
-	./spkg/bin/text-expand
-
-text-collapse:
-	./spkg/bin/text-collapse
-
-TESTPRELIMS = local/bin/sage-starts
-# The [a-z][a-z] matches all directories whose names consist of two
-# lower-case letters, to match the language directories.
-TESTDIRS = src/doc/common src/doc/[a-z][a-z] src/sage
-
-test: all # i.e. build and doc
-	$(TESTPRELIMS)
-	$(PIPE) "./sage -t --sagenb $(TESTDIRS) 2>&1" "tee -a logs/test.log"
-
-check: test
-
-testall: all # i.e. build and doc
-	$(TESTPRELIMS)
-	$(PIPE) "./sage -t --sagenb --optional $(TESTDIRS) 2>&1" "tee -a logs/testall.log"
-
-testlong: all # i.e. build and doc
-	$(TESTPRELIMS)
-	$(PIPE) "./sage -t --sagenb --long $(TESTDIRS) 2>&1" "tee -a logs/testlong.log"
-
-testalllong: all # i.e. build and doc
-	$(TESTPRELIMS)
-	$(PIPE) "./sage -t --sagenb --optional --long $(TESTDIRS) 2>&1" "tee -a logs/testalllong.log"
-
-ptest: all # i.e. build and doc
-	$(TESTPRELIMS)
-	$(PIPE) "./sage -tp --sagenb $(TESTDIRS) 2>&1" "tee -a logs/ptest.log"
-
-ptestall: all # i.e. build and doc
-	$(TESTPRELIMS)
-	$(PIPE) "./sage -tp --sagenb --optional $(TESTDIRS) 2>&1" "tee -a logs/ptestall.log"
-
-ptestlong: all # i.e. build and doc
-	$(TESTPRELIMS)
-	$(PIPE) "./sage -tp --sagenb --long $(TESTDIRS) 2>&1" "tee -a logs/ptestlong.log"
-
-ptestalllong: all # i.e. build and doc
-	$(TESTPRELIMS)
-	$(PIPE) "./sage -tp --sagenb --optional --long $(TESTDIRS) 2>&1" "tee -a logs/ptestalllong.log"
+# We do all downloads before emerging
+local_packages: local/portage bootstrap
+	mkdir -p ${SAGE_LOCAL}/portage/distfiles
+	${SAGE_LOCAL}/bin/emerge --oneshot --fetchonly ${SAGE_VERSION_PREFIX}legacy-spkg/sage-full${SAGE_VERSION_SUFFIX}
 
 
-testoptional: testall # just an alias
+# a check target that runs the doctests
+check: sage sage-starts
+	${SAGE_ROOT}/sage -t devel/sage-main/sage
 
-testoptionallong: testalllong # just an alias
-
-ptestoptional: ptestall # just an alias
-
-ptestoptionallong: ptestalllong # just an alias
-
-
-install:
-	echo "Experimental use only!"
-	if [ "$(DESTDIR)" = "" ]; then \
-		echo >&2 "Set the environment variable DESTDIR to the install path."; \
-		exit 1; \
-	fi
-	# Make sure we remove only an existing directory. If $(DESTDIR)/sage is
-	# a file instead of a directory then the mkdir statement later will fail
-	if [ -d "$(DESTDIR)"/sage ]; then \
-		rm -rf "$(DESTDIR)"/sage; \
-	fi
-	mkdir -p "$(DESTDIR)"/sage
-	mkdir -p "$(DESTDIR)"/bin
-	cp -Rp * "$(DESTDIR)"/sage
-	rm -f "$(DESTDIR)"/bin/sage
-	ln -s ../sage/sage "$(DESTDIR)"/bin/sage
-	"$(DESTDIR)"/bin/sage -c # Run sage-location
-
-
-.PHONY: all build build-serial start install \
-	doc doc-html doc-html-jsmath doc-html-mathjax doc-pdf \
-	doc-clean clean	distclean \
-	test check testoptional testall testlong testoptionallong testallong \
-	ptest ptestoptional ptestall ptestlong ptestoptionallong ptestallong
+.PHONY: sage bootstrap scripts extcode all sage-doc sage_package_dependencies \
+libcsage local_packages sage-starts

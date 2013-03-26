@@ -1,0 +1,8 @@
+# remove the ~amd64-linux set by the base prefix profile
+# and add the stable prefix keyword
+ACCEPT_KEYWORDS="-~amd64-linux amd64-linux"
+
+
+
+USE="-berkdb -fortran -gdbm -git -nls -pcre -ssl -python bootstrap"
+FEATURES="${FEATURES} -news"

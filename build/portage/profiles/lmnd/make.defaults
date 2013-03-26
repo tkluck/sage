@@ -1,0 +1,2 @@
+EHG_STORE_DIR="${LMNDBASE}/devel/"
+EGIT_STORE_DIR="${LMNDBASE}/devel/"

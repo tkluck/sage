@@ -1,0 +1,8 @@
+# Copyright 1999-2012 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Header$
+
+# We need newer versions of toolchain packages.
+~sys-apps/sandbox-2.6 amd64
+~sys-devel/gcc-4.7.1 amd64
+~sys-libs/glibc-2.16.0 amd64

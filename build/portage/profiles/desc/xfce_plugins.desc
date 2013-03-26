@@ -1,0 +1,11 @@
+# Copyright 1999-2012 Gentoo Foundation.
+# Distributed under the terms of the GNU General Public License v2
+# $Header$
+
+# This file contains descriptions of XFCE_PLUGINS USE_EXPAND flags.
+
+# Keep it sorted.
+
+brightness - Build xfce4-brightness-plugin for panel
+clock - Build xfce4-orageclock-plugin for panel
+trash - Build thunar-tpa (trash) plugin for panel

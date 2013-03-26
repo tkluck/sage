@@ -1,0 +1,7 @@
+# Copyright 1999-2012 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Header$
+
+# Fabian Groffen <grobian@gentoo.org>
+# Fails to compile coreutils, masked for no, bug #429992
+>=sys-devel/gcc-4.6

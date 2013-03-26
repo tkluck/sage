@@ -1,0 +1,3 @@
+[submodule "build/portage/src"]
+	path = build/portage/src
+	url = git://git.overlays.gentoo.org/proj/portage.git

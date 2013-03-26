@@ -1,0 +1,18 @@
+# Copyright 1999-2012 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Header$
+
+ARCH="s390"
+ACCEPT_KEYWORDS="s390"
+
+MULTILIB_ABIS="s390"
+DEFAULT_ABI="s390"
+ABI=${DEFAULT_ABI}
+
+CHOST="s390-ibm-linux-gnu"
+CFLAGS="-O2 -pipe"
+CXXFLAGS="${CFLAGS}"
+FFLAGS="${CFLAGS}"
+FCFLAGS="${CFLAGS}"
+
+USE="fbcon"

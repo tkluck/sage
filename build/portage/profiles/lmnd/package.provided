@@ -1,0 +1,11 @@
+sys-libs/timezone-data-2012c
+sys-process/time-1.7-r1
+dev-util/ctags-5.7
+sci-chemistry/jmol-12.3.14
+sci-chemistry/jmol-applet-12.3.14
+app-text/ghostscript-gpl-9.04-r4
+sys-apps/coreutils-8.14
+sys-libs/glibc-2.15-r3
+dev-lang/perl-5.14
+dev-perl/libintl-perl-1.200
+perl-core/ExtUtils-MakeMaker-6.620.0

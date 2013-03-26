@@ -1,0 +1,3 @@
+# add the stable prefix keyword
+ACCEPT_KEYWORDS="-~x86-macos x86-macos"
+

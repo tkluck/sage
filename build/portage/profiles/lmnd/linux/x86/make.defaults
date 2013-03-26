@@ -1,0 +1,4 @@
+# remove the ~x86-linux set by the base Gentoo-prefix profile
+# and add the stable prefix keyword
+ACCEPT_KEYWORDS="-~x86-linux x86-linux"
+

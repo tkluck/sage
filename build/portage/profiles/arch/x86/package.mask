@@ -1,0 +1,6 @@
+# Copyright 1999-2012 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Header$
+
+# Masked due to lack of action on bug #438780
+>=app-emulation/qemu-1.2.0

@@ -1,0 +1,15 @@
+# Copyright 1999-2012 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Header$
+
+# - TESTING PROFILE - TESTING PROFILE - 
+#  ------ USE AT YOUR OWN RISK ------
+
+USE="-* crypt hardened minimal multicall ncurses pic readline zlib"
+
+CFLAGS="-march=i686 -Os -pipe"
+CXXFLAGS="${CFLAGS}"
+FFLAGS="${CFLAGS}"
+FCFLAGS="${CFLAGS}"
+FEATURES="nodoc noinfo noman"
+

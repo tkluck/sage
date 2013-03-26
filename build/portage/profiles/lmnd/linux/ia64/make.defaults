@@ -1,0 +1,6 @@
+# remove the ~ia64-linux set by the base prefix profile
+# and add the stable prefix keyword
+# this profile is not considered to be stable,
+# do not restrict to a stable keyword
+#ACCEPT_KEYWORDS="-~ia64-linux ia64-linux"
+

@@ -1,0 +1,11 @@
+# Copyright 1999-2012 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Header$
+
+PROFILE_ARCH="xbox"
+USE="mmx sse"
+
+CFLAGS="-O2 -march=pentium3 -pipe"
+CXXFLAGS="${CFLAGS}"
+FFLAGS="${CFLAGS}"
+FCFLAGS="${CFLAGS}"

@@ -1,0 +1,33 @@
+#!/usr/bin/python
+
+import os
+import re
+import imp
+SAGE_ROOT = os.environ.get('SAGE_ROOT', '')
+version = imp.load_source('version', os.path.join(SAGE_ROOT,'src','sage','version.py'))
+
+def spkg_version_to_portage_version(version):
+    # gentoo wants that '3.0.12.p3' is renamed to '3.0.12_p3'
+    # and 1.1.6beta1 should be 1.1.6_beta1
+    # and 3-1-5_p3 should be 3.1.5_p3
+    version = version.replace('-','.')
+    version = version.replace('_','.')
+    parts = version.split(".")
+    # workaround for the boost-cropped package that should have been boost_cropped
+    if parts[0] == 'cropped':
+        parts = parts[1:]
+    new_parts = [parts[0]]
+    for part in parts[1:]:
+        m = re.match('(\d+)(.*)', part)
+        if m:
+            new_parts.append('.' + m.group(1))
+            if m.group(2):
+                new_parts.append('_' + m.group(2))
+        else:
+            new_parts.append('_' + part)
+    return ''.join(new_parts)
+
+
+
+if __name__ == "__main__":
+    print(spkg_version_to_portage_version(version.version))

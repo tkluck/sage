@@ -1,0 +1,13 @@
+# zodb related packages are masked in mainline Gentoo
+# This is also due to be removed from Sage:
+# 	http://trac.sagemath.org/sage_trac/ticket/10353
+# unmask them here temporarily
+=net-zope/zope-event-3.5.0.1
+=net-zope/zc-lockfile-1.0.0
+=net-zope/zope-proxy-3.6.1
+=net-zope/zdaemon-2.0.4
+=net-zope/zconfig-2.9.0
+=net-zope/zodb-3.9.7
+=net-zope/transaction-1.1.1
+
+=sci-libs/blas-reference-20070226-r2
