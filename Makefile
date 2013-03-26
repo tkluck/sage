@@ -24,14 +24,15 @@ bootstrap: local/bin/emerge \
            local/usr
 
 bootstrap_python: local/bin/python
-local/bin/python:
+local/bin/python: upstream
 	build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/libpng/libpng-1.2.35_p5.ebuild
 	build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/bzip2/bzip2-1.0.6.ebuild
 	build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/zlib/zlib-1.2.6_p0.ebuild
 	build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/readline/readline-6.2_p3.ebuild
 	build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/sqlite/sqlite-3.7.5_p1.ebuild
 	build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/python/python-2.7.3_p5.ebuild
-
+upstream:
+	mkdir -p ${SAGE_ROOT}/upstream
 
 #
 # installing emerge is just ./configure; make; make install. Here, we have
