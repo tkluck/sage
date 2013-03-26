@@ -24,6 +24,6 @@ src_compile() {
         return 0
 }
 src_install() {
-        SAGE_ROOT=$(cd "${EPREFIX}/.." && pwd) sage -sh -c ./spkg-install || die
+        SAGE_LOCAL=${EPREFIX} ./spkg-install || die
 }
 
