@@ -21,19 +21,28 @@ bootstrap: local/bin/emerge \
            local/etc/portage/make.profile \
            local/etc/make.conf \
            local/etc/portage/categories \
-           local/portage \
            local/usr
+
+bootstrap_python: local/bin/python
+local/bin/python:
+	build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/libpng/libpng-1.2.35_p5.ebuild
+	build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/bzip2/bzip2-1.0.6.ebuild
+	build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/zlib/zlib-1.2.6_p0.ebuild
+	build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/readline/readline-6.2_p3.ebuild
+	build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/sqlite/sqlite-3.7.5_p1.ebuild
+	build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/python/python-2.7.3_p5.ebuild
+
 
 #
 # installing emerge is just ./configure; make; make install. Here, we have
 # split that into several steps/targets, but maybe that's unnecessary
-${PORTAGE_DIR}/src/config.log: ${PORTAGE_DIR}/src/autogen.sh
+build/portage/src/config.log: ${PORTAGE_DIR}/src/autogen.sh bootstrap_python
 	(cd ${PORTAGE_DIR}/src && ./autogen.sh) 
-	(cd ${PORTAGE_DIR}/src && ./configure --prefix=${SAGE_LOCAL} --with-offset-prefix=${SAGE_LOCAL} --with-portage-user=${USER} --with-portage-group=${USER} --with-extra-path=/usr/local/bin:/usr/bin:/bin )
+	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -sh -c './configure --prefix=${SAGE_LOCAL} --with-offset-prefix=${SAGE_LOCAL} --with-portage-user=${USER} --with-portage-group=${USER} --with-extra-path=/usr/local/bin:/usr/bin:/bin' )
 local/bin/emerge: ${PORTAGE_DIR}/src/config.log
 	# install fails when it can't make certain symbolic links, so let's delete them if they exist
 	rm -f ${SAGE_LOCAL}/etc/make.globals
-	(cd ${PORTAGE_DIR}/src && make && make install)
+	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -sh -c make && ${SAGE_ROOT}/sage -sh -c 'make install')
 
 # make sure sage is in our path when we need it
 local/bin/sage:
@@ -56,10 +65,6 @@ local/etc/make.conf: build/portage/make.conf
 	# substitute ${CONFIGURE_EPREFIX} manually.
 	# TODO: this only works if the path does not contains the + character!!!
 	cat ${PORTAGE_DIR}/make.conf | sed 's+$${CONFIGURE_EPREFIX}'+${SAGE_LOCAL}+g > local/etc/make.conf
-
-# the local/portage directory contains all the information about the packages
-local/portage:
-	ln -sf ../build/portage/ebuilds local/portage
     
 # this is a workaround: some parts of portage seem to expect ${EPREFIX} as the prefix,
 # others expect ${EPREFIX}/usr. I just copied this workaround from lmonade
@@ -77,6 +82,8 @@ local/share/sage/ext:
 # install the scripts to local/bin by just copying them
 scripts: local/bin/sage_fortran
 	cp ${SAGE_ROOT}/src/bin/* ${SAGE_LOCAL}/bin
+	chmod a+x ${SAGE_LOCAL}/bin/*
+
 # the old makefile does some magic to find fortran. Here, we just wrap
 # the system version
 local/bin/sage_fortran:
@@ -95,7 +102,7 @@ local/lib/libcsage.so: sage_package_dependencies
 # We use the --oneshot option to make sure emerge does not hold on to this package
 # in case of a downgrade (which would make the downgrade fail)
 sage_package_dependencies: local_packages extcode scripts bootstrap 
-	${SAGE_LOCAL}/bin/emerge --noreplace --oneshot --deep --update --keep-going --jobs 4 ${SAGE_VERSION_PREFIX}legacy-spkg/sage${SAGE_VERSION_SUFFIX}
+	${SAGE_ROOT}/sage -sh -c '${SAGE_LOCAL}/bin/emerge --noreplace --oneshot --deep --update --keep-going --jobs 4 ${SAGE_VERSION_PREFIX}legacy-spkg/sage${SAGE_VERSION_SUFFIX}'
 
 # after building sage, we install all other packages by emerging the sage-full
 # ebuild. Some of those packages actually depend on sage, and conversely sage
@@ -118,9 +125,8 @@ local/etc/sage-started.txt: sage
 	${SAGE_LOCAL}/bin/sage-starts
 
 # We do all downloads before emerging
-local_packages: local/portage bootstrap
-	mkdir -p ${SAGE_LOCAL}/portage/distfiles
-	${SAGE_LOCAL}/bin/emerge --oneshot --fetchonly ${SAGE_VERSION_PREFIX}legacy-spkg/sage-full${SAGE_VERSION_SUFFIX}
+local_packages: bootstrap
+	${SAGE_ROOT}/sage -sh -c '${SAGE_LOCAL}/bin/emerge --oneshot --fetchonly ${SAGE_VERSION_PREFIX}legacy-spkg/sage-full${SAGE_VERSION_SUFFIX}'
 
 
 # a check target that runs the doctests

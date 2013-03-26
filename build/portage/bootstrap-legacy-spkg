@@ -1,0 +1,31 @@
+#!/bin/sh
+
+# This script installs one of the legacy-spkg spkgs without using emerge itself.
+# the argument $1 should be the ebuild. This assumes that the ebuild
+# contains the following files:
+#
+#   `dirname "$1"`/files/spkg-install
+#   `dirname "$1"`/files/package-version.txt
+#
+# and that
+#
+#   . "$1" will give a variable SRC_URI that is a tarball
+
+
+. "$1"
+
+EBUILDDIR=$(cd `dirname "$1"` && pwd)
+(cd upstream && wget -c "$SRC_URI")
+
+TARBALLNAME=`basename "$SRC_URI"`
+PACKAGENAME=`basename "$1"`
+rm -rf "build/artifacts/$PACKAGENAME"
+mkdir -p "build/artifacts/$PACKAGENAME"
+cd "build/artifacts/$PACKAGENAME" || exit 1
+cp "../../../upstream/$TARBALLNAME" .
+tar -xf "$TARBALLNAME"
+rm "$TARBALLNAME"
+mv * src
+cp -r "$EBUILDDIR"/files/* .
+SAGE_ROOT=../../.. ../../../sage -sh -c ./spkg-install
+
