@@ -6,8 +6,7 @@ SRC_URI="http://boxen.math.washington.edu/home/ohanar/sage-git/upstream/conway_p
 LICENSE=""
 SLOT="0"
 KEYWORDS="amd64-linux"
-DEPEND="legacy-spkg/sage_root
-legacy-spkg/sagenb"
+DEPEND="legacy-spkg/sage_root"
 RDEPEND="${DEPEND}"
 S="${WORKDIR}"
 src_prepare() {
@@ -21,6 +20,6 @@ src_compile() {
         return 0
 }
 src_install() {
-        SAGE_ROOT="${EPREFIX}/.." sage -sh -c ./spkg-install || die
+        SAGE_ROOT=$(cd "${EPREFIX}/.." && pwd) sage -sh -c ./spkg-install || die
 }
 
