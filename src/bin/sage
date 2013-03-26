@@ -429,18 +429,18 @@ if [ "$1" = '-ipython' -o "$1" = '--ipython' ]; then
     exec "$SAGE_LOCAL/bin/ipython" "$@"
 fi
 
-if [ "$1" = '-sh' -o "$1" = '--sh' ]; then
+if [ "$1" = '-sh' -o "$1" = '--sh' -o "$1" = '-bash' -o "$1" = '--bash' ]; then
     # AUTHORS:
     # - Carl Witty and William Stein: initial version
     # - Craig Citro: add options for not loading profile
     # - Martin Albrecht: fix zshell prompt (#11866)
     # - John Palmieri: shorten the prompts, and don't print messages if
     #   there are more arguments to 'sage -sh' (#11790)
-    shift
     # If $SHELL is unset, default to bash
-    if [ -z "$SHELL" ]; then
+    if [ -z "$SHELL" -o "$1" = '-bash' -o "$1" = '--bash' ]; then
         export SHELL=bash
     fi
+    shift
     # We must start a new shell with no .profile or .bashrc files
     # processed, so that we know our path is correct
     SHELL_NAME=`basename "$SHELL"`
