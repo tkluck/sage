@@ -1,4 +1,5 @@
-SAGE_ROOT="${PWD}"
+# XXX this should probably have quotes, but then it fails under zsh  ???
+SAGE_ROOT=${PWD}
 SAGE_LOCAL=${SAGE_ROOT}/local
 PORTAGE_DIR=build/portage
 PORTAGE_GROUP=$(shell groups | cut -d' ' -f1)
