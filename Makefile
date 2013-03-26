@@ -120,7 +120,7 @@ local/lib/libcsage.so: sage_package_dependencies
 # sage -b to work
 # We use the --oneshot option to make sure emerge does not hold on to this package
 # in case of a downgrade (which would make the downgrade fail)
-sage_package_dependencies: local_packages extcode scripts bootstrap 
+sage_package_dependencies: .local_packages.stamp extcode scripts bootstrap 
 	${SAGE_ROOT}/sage -bash -c '${SAGE_LOCAL}/bin/emerge --noreplace --oneshot --deep --update --keep-going --jobs 4 ${SAGE_VERSION_PREFIX}legacy-spkg/sage${SAGE_VERSION_SUFFIX}'
 
 # after building sage, we install all other packages by emerging the sage-full
@@ -144,8 +144,10 @@ local/etc/sage-started.txt: sage
 	${SAGE_LOCAL}/bin/sage-starts
 
 # We do all downloads before emerging
-local_packages: bootstrap
+local_packages: .local_packages.stamp
+.local_packages.stamp: bootstrap
 	${SAGE_ROOT}/sage -bash -c '${SAGE_LOCAL}/bin/emerge --oneshot --fetchonly ${SAGE_VERSION_PREFIX}legacy-spkg/sage-full${SAGE_VERSION_SUFFIX}'
+	touch .local_packages.stamp
 
 
 # a check target that runs the doctests
