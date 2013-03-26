@@ -57,11 +57,11 @@ bootstrap_gnu_utils: .bootstrap_gnu_utils.stamp
 # split that into several steps/targets, but maybe that's unnecessary
 build/portage/src/config.log: build/portage/src/autogen.sh local/bin/python .bootstrap_gnu_utils.stamp
 	(cd ${PORTAGE_DIR}/src && ./autogen.sh) 
-	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -sh -c './configure --prefix=${SAGE_LOCAL} --with-offset-prefix=${SAGE_LOCAL} --with-portage-user=${USER} --with-portage-group=${PORTAGE_GROUP} --with-extra-path=/usr/local/bin:/usr/bin:/bin' )
+	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c './configure --prefix=${SAGE_LOCAL} --with-offset-prefix=${SAGE_LOCAL} --with-portage-user=${USER} --with-portage-group=${PORTAGE_GROUP} --with-extra-path=/usr/local/bin:/usr/bin:/bin' )
 local/bin/emerge: build/portage/src/config.log
 	# install fails when it can't make certain symbolic links, so let's delete them if they exist
 	rm -f ${SAGE_LOCAL}/etc/make.globals
-	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -sh -c make && ${SAGE_ROOT}/sage -sh -c 'make install')
+	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c make && ${SAGE_ROOT}/sage -bash -c 'make install')
 
 # make sure sage is in our path when we need it
 local/bin/sage:
@@ -112,7 +112,7 @@ local/bin/sage_fortran:
 
 libcsage: local/lib/libcsage.so
 local/lib/libcsage.so: sage_package_dependencies
-	(cd ${SAGE_ROOT}/src/c_lib && ${SAGE_ROOT}/sage -sh -c scons -Q install)
+	(cd ${SAGE_ROOT}/src/c_lib && ${SAGE_ROOT}/sage -bash -c scons -Q install)
 	(cd ${SAGE_ROOT}/local/include && ln -sf ../../src/c_lib/include csage)
 	(cd ${SAGE_ROOT}/local/lib && ln -sf ../../src/c_lib/libcsage.so)
 
@@ -121,7 +121,7 @@ local/lib/libcsage.so: sage_package_dependencies
 # We use the --oneshot option to make sure emerge does not hold on to this package
 # in case of a downgrade (which would make the downgrade fail)
 sage_package_dependencies: local_packages extcode scripts bootstrap 
-	${SAGE_ROOT}/sage -sh -c '${SAGE_LOCAL}/bin/emerge --noreplace --oneshot --deep --update --keep-going --jobs 4 ${SAGE_VERSION_PREFIX}legacy-spkg/sage${SAGE_VERSION_SUFFIX}'
+	${SAGE_ROOT}/sage -bash -c '${SAGE_LOCAL}/bin/emerge --noreplace --oneshot --deep --update --keep-going --jobs 4 ${SAGE_VERSION_PREFIX}legacy-spkg/sage${SAGE_VERSION_SUFFIX}'
 
 # after building sage, we install all other packages by emerging the sage-full
 # ebuild. Some of those packages actually depend on sage, and conversely sage
@@ -145,7 +145,7 @@ local/etc/sage-started.txt: sage
 
 # We do all downloads before emerging
 local_packages: bootstrap
-	${SAGE_ROOT}/sage -sh -c '${SAGE_LOCAL}/bin/emerge --oneshot --fetchonly ${SAGE_VERSION_PREFIX}legacy-spkg/sage-full${SAGE_VERSION_SUFFIX}'
+	${SAGE_ROOT}/sage -bash -c '${SAGE_LOCAL}/bin/emerge --oneshot --fetchonly ${SAGE_VERSION_PREFIX}legacy-spkg/sage-full${SAGE_VERSION_SUFFIX}'
 
 
 # a check target that runs the doctests
