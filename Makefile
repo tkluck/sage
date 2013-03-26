@@ -1,6 +1,7 @@
 SAGE_ROOT="${PWD}"
 SAGE_LOCAL=${SAGE_ROOT}/local
 PORTAGE_DIR=build/portage
+PORTAGE_GROUP=$(shell groups | cut -d' ' -f1)
 
 # This makefile takes care of the following:
 #  1. install Portage Prefix into $SAGE_LOCAL (this is the bootstrap target)
@@ -48,7 +49,7 @@ bootstrap_gnu_utils:
 # split that into several steps/targets, but maybe that's unnecessary
 build/portage/src/config.log: ${PORTAGE_DIR}/src/autogen.sh bootstrap_python
 	(cd ${PORTAGE_DIR}/src && ./autogen.sh) 
-	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -sh -c './configure --prefix=${SAGE_LOCAL} --with-offset-prefix=${SAGE_LOCAL} --with-portage-user=${USER} --with-portage-group=${USER} --with-extra-path=/usr/local/bin:/usr/bin:/bin' )
+	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -sh -c './configure --prefix=${SAGE_LOCAL} --with-offset-prefix=${SAGE_LOCAL} --with-portage-user=${USER} --with-portage-group=${PORTAGE_GROUP} --with-extra-path=/usr/local/bin:/usr/bin:/bin' )
 local/bin/emerge: ${PORTAGE_DIR}/src/config.log
 	# install fails when it can't make certain symbolic links, so let's delete them if they exist
 	rm -f ${SAGE_LOCAL}/etc/make.globals
