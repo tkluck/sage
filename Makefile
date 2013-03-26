@@ -26,7 +26,8 @@ bootstrap: local/bin/emerge \
            local/usr
 
 bootstrap_python: local/bin/python
-local/bin/python: upstream
+local/bin/python:
+	mkdir -p ${SAGE_ROOT}/upstream
 	if ! python --version 2>&1 | grep -q 2.7; then \
             build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/libpng/libpng-1.2.35_p5.ebuild; \
             build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/bzip2/bzip2-1.0.6.ebuild; \
@@ -35,27 +36,29 @@ local/bin/python: upstream
             build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/sqlite/sqlite-3.7.5_p1.ebuild; \
             build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/python/python-2.7.3_p5.ebuild; \
         else \
+            mkdir -p local/bin; \
             ln -sf `which python` local/bin/python; \
         fi
-upstream:
-	mkdir -p ${SAGE_ROOT}/upstream
 
-bootstrap_gnu_utils:
+bootstrap_gnu_utils: .bootstrap_gnu_utils.stamp
+.bootstrap_gnu_utils.stamp:
 	for util in sed find xargs wget grep make install; do \
            if ! $$util --version | grep -q GNU; then \
                if which g$$util; then \
                    ln -sf `which g$$util` local/bin/$$util; \
                fi \
            fi \
-        done
+        done 
+	touch .bootstrap_gnu_utils.stamp
+
 
 #
 # installing emerge is just ./configure; make; make install. Here, we have
 # split that into several steps/targets, but maybe that's unnecessary
-build/portage/src/config.log: ${PORTAGE_DIR}/src/autogen.sh bootstrap_python
+build/portage/src/config.log: build/portage/src/autogen.sh local/bin/python .bootstrap_gnu_utils.stamp
 	(cd ${PORTAGE_DIR}/src && ./autogen.sh) 
 	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -sh -c './configure --prefix=${SAGE_LOCAL} --with-offset-prefix=${SAGE_LOCAL} --with-portage-user=${USER} --with-portage-group=${PORTAGE_GROUP} --with-extra-path=/usr/local/bin:/usr/bin:/bin' )
-local/bin/emerge: ${PORTAGE_DIR}/src/config.log
+local/bin/emerge: build/portage/src/config.log
 	# install fails when it can't make certain symbolic links, so let's delete them if they exist
 	rm -f ${SAGE_LOCAL}/etc/make.globals
 	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -sh -c make && ${SAGE_ROOT}/sage -sh -c 'make install')
@@ -98,7 +101,7 @@ local/share/sage/ext:
 # install the scripts to local/bin by just copying them
 scripts: local/bin/sage_fortran
 	cp ${SAGE_ROOT}/src/bin/* ${SAGE_LOCAL}/bin
-	chmod a+x ${SAGE_LOCAL}/bin/*
+	for name in `ls ${SAGE_ROOT}/src/bin`; do chmod a+x ${SAGE_LOCAL}/bin/$$name; done
 
 # the old makefile does some magic to find fortran. Here, we just wrap
 # the system version
