@@ -103,7 +103,6 @@ sage_package_dependencies: local_packages extcode scripts bootstrap
 # We use the --oneshot option to make sure emerge does not hold on to this package
 # in case of a downgrade (which would make the downgrade fail)
 sage: extcode scripts sage_package_dependencies libcsage
-	ln -sf sage-main ${SAGE_ROOT}/devel/sage
 	${SAGE_ROOT}/sage -b
 	${SAGE_LOCAL}/bin/emerge --noreplace --oneshot --deep --update --keep-going --jobs 4 ${SAGE_VERSION_PREFIX}legacy-spkg/sage-full${SAGE_VERSION_SUFFIX}
 
