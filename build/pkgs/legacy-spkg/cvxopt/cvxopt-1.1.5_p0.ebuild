@@ -18,7 +18,7 @@ RDEPEND="${DEPEND}"
 S="${WORKDIR}"
 src_prepare() {
         mv cvxopt-1.1.5 src
-        cp -r ${FILESDIR}/* . || die
+        cp -r "${FILESDIR}"/* . || die
 }
 src_configure() {
         return 0
@@ -27,6 +27,6 @@ src_compile() {
         return 0
 }
 src_install() {
-        SAGE_LOCAL=${EPREFIX} ./spkg-install || die
+        SAGE_LOCAL="${EPREFIX}" ./spkg-install || die
 }
 

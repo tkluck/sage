@@ -11,7 +11,7 @@ RDEPEND="${DEPEND}"
 S="${WORKDIR}"
 src_prepare() {
         mv mpir-2.6.0 src
-        cp -r ${FILESDIR}/* . || die
+        cp -r "${FILESDIR}"/* . || die
 }
 src_configure() {
         return 0
@@ -20,6 +20,6 @@ src_compile() {
         return 0
 }
 src_install() {
-        ABI= SAGE_LOCAL=${EPREFIX} ./spkg-install || die
+        ABI= SAGE_LOCAL="${EPREFIX}" ./spkg-install || die
 }
 
