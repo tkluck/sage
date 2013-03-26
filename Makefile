@@ -34,6 +34,15 @@ local/bin/python: upstream
 upstream:
 	mkdir -p ${SAGE_ROOT}/upstream
 
+bootstrap_gnu_utils:
+	for util in sed find xargs wget grep make install; do \
+           if ! $$util --version | grep -q GNU; then \
+               if which g$$util; then \
+                   ln -sf `which g$$util` local/bin/$$util; \
+               fi \
+           fi \
+        done
+
 #
 # installing emerge is just ./configure; make; make install. Here, we have
 # split that into several steps/targets, but maybe that's unnecessary
