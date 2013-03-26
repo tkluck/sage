@@ -2,7 +2,7 @@
 EAPI=5
 DECRIPTION="gcc"
 HOMEPAGE=""
-SRC_URI=""
+SRC_URI="http://boxen.math.washington.edu/home/ohanar/sage-git/upstream/gcc-4.6.3.tar.bz2"
 LICENSE=""
 SLOT="0"
 KEYWORDS="amd64-linux"
@@ -13,7 +13,8 @@ legacy-spkg/zlib"
 RDEPEND="${DEPEND}"
 S="${WORKDIR}"
 src_unpack() {
-	return 0
+        mv gcc-4.6.3 src
+        cp -r ${FILESDIR}/* . || die
 }
 src_configure() {
         return 0
@@ -22,6 +23,6 @@ src_compile() {
         return 0
 }
 src_install() {
-	return 0
+        SAGE_LOCAL=${EPREFIX} ./spkg-install || die
 }
 
