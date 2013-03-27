@@ -30,7 +30,7 @@ upstream:
 
 bootstrap_python: local/bin/python
 local/bin/python: local/bin upstream
-	if PATH=local/bin/$$PATH python --version 2>&1 | grep 2.7 > /dev/null; then \
+	if PATH=local/bin:$$PATH python --version 2>&1 | grep 2.7 > /dev/null; then \
             ln -sf `command -v python` local/bin/python; \
         else \
             build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/libpng/libpng-1.2.35_p5.ebuild; \
