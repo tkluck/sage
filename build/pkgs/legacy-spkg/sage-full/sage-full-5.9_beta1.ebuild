@@ -77,7 +77,6 @@ DEPEND="=legacy-spkg/symmetrica-2.0_p7
 =legacy-spkg/blas-20070724
 =legacy-spkg/boost_cropped-1.52.0
 =legacy-spkg/mpir-2.6.0_p0
-=legacy-spkg/gcc-4.6.3
 =legacy-spkg/fflas_ffpack-1.6.0_p0
 =legacy-spkg/scons-1.2.0
 =legacy-spkg/cephes-2.8_p1
