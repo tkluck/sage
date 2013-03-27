@@ -2,7 +2,6 @@
 SAGE_ROOT=${PWD}
 SAGE_LOCAL=${SAGE_ROOT}/local
 PORTAGE_DIR=build/portage
-PORTAGE_GROUP=$$(groups | cut -d' ' -f1)
 
 # This makefile takes care of the following:
 #  1. bootstrap GNU utils and python2.7 (when necessary)
@@ -62,7 +61,7 @@ build/portage/src/configure: .bootstrap_gnu_utils.stamp
 	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c ./autogen.sh) 
 
 local/bin/emerge: build/portage/src/configure local/bin/python .bootstrap_gnu_utils.stamp
-	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c "./configure --prefix=${SAGE_LOCAL} --with-offset-prefix=${SAGE_LOCAL} --with-portage-user=${USER} --with-portage-group=${PORTAGE_GROUP} --with-extra-path=/usr/local/bin:/usr/bin:/bin" )
+	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c "./configure --prefix=${SAGE_LOCAL} --with-offset-prefix=${SAGE_LOCAL} --with-portage-user=`id -un` --with-portage-group=`id -gn` --with-extra-path=/usr/local/bin:/usr/bin:/bin" )
 	# install fails when it can't make certain symbolic links, so let's delete them if they exist
 	rm -f ${SAGE_LOCAL}/etc/make.globals
 	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c make && ${SAGE_ROOT}/sage -bash -c 'make install')
