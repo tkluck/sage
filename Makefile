@@ -43,6 +43,7 @@ local/bin/python:
 bootstrap_gnu_utils: .bootstrap_gnu_utils.stamp
 .bootstrap_gnu_utils.stamp:
 	mkdir -p local/bin
+	mkdir -p ${SAGE_ROOT}/upstream
 	for util in sed find xargs wget grep make install id; do \
            if $$util --version 2>&1 | grep GNU > /dev/null; then \
                true; \
