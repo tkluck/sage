@@ -1,0 +1,27 @@
+= sed =
+
+== Description ==
+
+GNU wget downloads files.
+
+== License ==
+
+GPL
+
+== SPKG Maintainers ==
+
+None
+
+== Upstream Contact ==
+
+ * Website: https://www.gnu.org/software/sed/
+
+== Dependencies ==
+
+None
+
+== Changelog ==
+
+=== sed-4.2.2 (Timo Kluck, 27 March 2013)
+
+ * Initial packaging

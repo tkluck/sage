@@ -84,10 +84,22 @@ bootstrap_wget: .bootstrap_wget.stamp
         fi 
 	touch .bootstrap_wget.stamp
 
-build/portage/src/configure: .bootstrap_wget.stamp .bootstrap_findutils.stamp .bootstrap_coreutils.stamp
+bootstrap_sed: .bootstrap_sed.stamp
+.bootstrap_sed.stamp: local/bin upstream .bootstrap_coreutils.stamp .bootstrap_findutils.stamp
+	if PATH=local/bin:$$PATH sed --version 2>&1 | grep GNU > /dev/null; then \
+            true; \
+        else \
+            if gsed --version 2>&1 > /dev/null; then \
+                ln -sf `command -v gsed` local/bin/sed; \
+            else \
+                build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/sed/sed-4.2.2.ebuild; \
+            fi \
+        fi 
+	touch .bootstrap_sed.stamp
+build/portage/src/configure: .bootstrap_wget.stamp .bootstrap_findutils.stamp .bootstrap_coreutils.stamp .bootstrap_sed.stamp
 	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c ./autogen.sh) 
 
-local/bin/emerge: build/portage/src/configure local/bin/python .bootstrap_gnu_utils.stamp
+local/bin/emerge: build/portage/src/configure local/bin/python
 	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c './configure --prefix=${SAGE_LOCAL} --with-offset-prefix=${SAGE_LOCAL} --with-portage-user=`id -un` --with-portage-group=`id -gn` --with-extra-path=/usr/local/bin:/usr/bin:/bin' )
 	# install fails when it can't make certain symbolic links, so let's delete them if they exist
 	rm -f ${SAGE_LOCAL}/etc/make.globals
