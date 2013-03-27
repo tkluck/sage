@@ -59,11 +59,11 @@ src_compile() {
 }
 src_install() {
         # first, compile + install the c library for sage
-	(cd ${SAGE_ROOT}/src/c_lib && scons -Q install) || die
+	(cd ${SAGE_ROOT}/src/c_lib && SAGE_LOCAL=${EPREFIX} scons -Q install) || die
 	(cd ${SAGE_ROOT}/local/include && ln -sf ../../src/c_lib/include csage) || die
 	(cd ${SAGE_ROOT}/local/lib && ln -sf ../../src/c_lib/libcsage.so) || die
 
         # then build the cython stuff
-        sage -b
+        SAGE_LOCAL=${EPREFIX} sage-build
 }
 
