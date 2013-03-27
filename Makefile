@@ -85,8 +85,8 @@ local/usr:
 	(cd ${SAGE_LOCAL} && ln -sf . usr)
 
 gcc: bootstrap
-	if ! gcc --version | grep -q 4.6; then \
-            if ! gcc --version | grep -q 4.7; then \
+	if ! ${SAGE_ROOT}/sage -bash -c 'gcc --version' | grep -q 4.6; then \
+            if ! ${SAGE_ROOT}/sage -bash -c 'gcc --version' | grep -q 4.7; then \
                 ${SAGE_ROOT}/sage -bash -c '${SAGE_LOCAL}/bin/emerge --noreplace --oneshot legacy-spkg/gcc'; \
                 ${SAGE_ROOT}/sage -bash -c '${SAGE_LOCAL}/bin/emerge --oneshot legacy-spkg/mpir legacy-spkg/mpfr legacy-spkg/mpc legacy-spkg/zlib'; \
             fi; \
