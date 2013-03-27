@@ -50,7 +50,7 @@ bootstrap_coreutils: .bootstrap_coreutils.stamp
                if g$$util --version 2>&1 > /dev/null; then \
                    ln -sf `command -v g$$util` local/bin/$$util; \
                else \
-                   build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/coreutils/coreutils-8.21.ebuild; \
+                   build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/coreutils/coreutils-8.13.ebuild; \
                fi \
            fi \
         done 

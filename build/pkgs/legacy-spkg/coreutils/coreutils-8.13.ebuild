@@ -2,7 +2,7 @@
 EAPI=5
 DECRIPTION="coreutils"
 HOMEPAGE=""
-SRC_URI="http://ftp.gnu.org/gnu/coreutils/coreutils-8.21.tar.xz"
+SRC_URI="http://ftp.gnu.org/gnu/coreutils/coreutils-8.13.tar.gz"
 LICENSE=""
 SLOT="0"
 KEYWORDS="amd64-linux"
@@ -10,7 +10,7 @@ DEPEND=""
 RDEPEND="${DEPEND}"
 S="${WORKDIR}"
 src_prepare() {
-        mv coreutils-8.21 src
+        mv coreutils-8.13 src
         cp -r "${FILESDIR}"/* . || die
 }
 src_configure() {
