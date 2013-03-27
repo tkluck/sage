@@ -57,7 +57,7 @@ bootstrap_coreutils: .bootstrap_coreutils.stamp
 	touch .bootstrap_coreutils.stamp
 
 bootstrap_findutils: .bootstrap_findutils.stamp
-.bootstrap_findutils.stamp: local/bin upstream
+.bootstrap_findutils.stamp: local/bin upstream .bootstrap_coreutils.stamp
 	for util in find xargs; do \
            if PATH=local/bin:$$PATH $$util --version 2>&1 | grep GNU > /dev/null; then \
                true; \
@@ -72,7 +72,7 @@ bootstrap_findutils: .bootstrap_findutils.stamp
 	touch .bootstrap_findutils.stamp
 
 bootstrap_wget: .bootstrap_wget.stamp
-.bootstrap_wget.stamp: local/bin upstream
+.bootstrap_wget.stamp: local/bin upstream .bootstrap_coreutils.stamp .bootstrap_findutils.stamp
 	if PATH=local/bin:$$PATH wget --version 2>&1 | grep GNU > /dev/null; then \
             true; \
         else \
