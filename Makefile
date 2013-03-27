@@ -2,7 +2,7 @@
 SAGE_ROOT=${PWD}
 SAGE_LOCAL=${SAGE_ROOT}/local
 PORTAGE_DIR=build/portage
-PORTAGE_GROUP=$(shell groups | cut -d' ' -f1)
+PORTAGE_GROUP=$$(groups | cut -d' ' -f1)
 
 # This makefile takes care of the following:
 #  1. bootstrap GNU utils and python2.7 (when necessary)
@@ -54,14 +54,9 @@ bootstrap_gnu_utils: .bootstrap_gnu_utils.stamp
         done 
 	touch .bootstrap_gnu_utils.stamp
 
-
-#
-# installing emerge is just ./configure; make; make install. Here, we have
-# split that into several steps/targets, but maybe that's unnecessary
-build/portage/src/config.log: build/portage/src/autogen.sh local/bin/python .bootstrap_gnu_utils.stamp
+local/bin/emerge: build/portage/src/autogen.sh local/bin/python .bootstrap_gnu_utils.stamp
 	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c ./autogen.sh) 
-	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c './configure --prefix=${SAGE_LOCAL} --with-offset-prefix=${SAGE_LOCAL} --with-portage-user=${USER} --with-portage-group=${PORTAGE_GROUP} --with-extra-path=/usr/local/bin:/usr/bin:/bin' )
-local/bin/emerge: build/portage/src/config.log
+	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c "./configure --prefix=${SAGE_LOCAL} --with-offset-prefix=${SAGE_LOCAL} --with-portage-user=${USER} --with-portage-group=${PORTAGE_GROUP} --with-extra-path=/usr/local/bin:/usr/bin:/bin" )
 	# install fails when it can't make certain symbolic links, so let's delete them if they exist
 	rm -f ${SAGE_LOCAL}/etc/make.globals
 	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c make && ${SAGE_ROOT}/sage -bash -c 'make install')
