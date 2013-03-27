@@ -84,13 +84,15 @@ local/etc/make.conf: build/portage/make.conf
 local/usr:
 	(cd ${SAGE_LOCAL} && ln -sf . usr)
 
-gcc: bootstrap
+gcc: bootstrap .rebuilt_gccs_dependencies.stamp
+.rebuilt_gccs_dependencies.stamp:
 	if ! ${SAGE_ROOT}/sage -bash -c 'gcc --version' | grep -q 4.6; then \
             if ! ${SAGE_ROOT}/sage -bash -c 'gcc --version' | grep -q 4.7; then \
                 ${SAGE_ROOT}/sage -bash -c '${SAGE_LOCAL}/bin/emerge --noreplace --oneshot legacy-spkg/gcc'; \
-                ${SAGE_ROOT}/sage -bash -c '${SAGE_LOCAL}/bin/emerge --oneshot legacy-spkg/mpir legacy-spkg/mpfr legacy-spkg/mpc legacy-spkg/zlib'; \
             fi; \
         fi
+	${SAGE_ROOT}/sage -bash -c '${SAGE_LOCAL}/bin/emerge --oneshot legacy-spkg/mpir legacy-spkg/mpfr legacy-spkg/mpc legacy-spkg/zlib';
+	touch .rebuilt_gccs_dependencies.stamp
 
 # We use the --oneshot option to make sure emerge does not hold on to this package
 # in case of a downgrade (which would make the downgrade fail)
