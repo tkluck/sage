@@ -28,22 +28,24 @@ bootstrap: local/bin/emerge \
 bootstrap_python: local/bin/python
 local/bin/python:
 	mkdir -p ${SAGE_ROOT}/upstream
-	if ! python --version 2>&1 | grep -q 2.7; then \
+	if python --version 2>&1 | grep 2.7 > /dev/null; then \
+            mkdir -p local/bin; \
+            ln -sf `which python` local/bin/python; \
+        else \
             build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/libpng/libpng-1.2.35_p5.ebuild; \
             build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/bzip2/bzip2-1.0.6.ebuild; \
             build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/zlib/zlib-1.2.6_p0.ebuild; \
             build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/readline/readline-6.2_p3.ebuild; \
             build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/sqlite/sqlite-3.7.5_p1.ebuild; \
             build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/python/python-2.7.3_p5.ebuild; \
-        else \
-            mkdir -p local/bin; \
-            ln -sf `which python` local/bin/python; \
         fi
 
 bootstrap_gnu_utils: .bootstrap_gnu_utils.stamp
 .bootstrap_gnu_utils.stamp:
 	for util in sed find xargs wget grep make install; do \
-           if ! $$util --version | grep -q GNU; then \
+           if $$util --version | grep GNU > /dev/null; then \
+               true; \
+           else\
                if which g$$util; then \
                    ln -sf `which g$$util` local/bin/$$util; \
                else \
