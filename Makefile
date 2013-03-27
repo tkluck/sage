@@ -130,7 +130,7 @@ sage_package_dependencies: .local_packages.stamp extcode scripts bootstrap
 # in case of a downgrade (which would make the downgrade fail)
 sage: extcode scripts sage_package_dependencies libcsage
 	${SAGE_ROOT}/sage -b
-	${SAGE_LOCAL}/bin/emerge --noreplace --oneshot --deep --update --keep-going --jobs 4 ${SAGE_VERSION_PREFIX}legacy-spkg/sage-full${SAGE_VERSION_SUFFIX}
+	${SAGE_ROOT}/sage -bash -c '${SAGE_LOCAL}/bin/emerge --noreplace --oneshot --deep --update --keep-going --jobs 4 ${SAGE_VERSION_PREFIX}legacy-spkg/sage-full${SAGE_VERSION_SUFFIX}'
 
 # the sage-docs are necessary for some of the doctests
 # it is, however, extremely memory-intensive to build them
