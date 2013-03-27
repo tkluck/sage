@@ -1,0 +1,28 @@
+Quick start
+===========
+You can use the following commands to install sage from this git repository:
+
+    git submodule update --init
+    make
+
+if you're on linux-amd64. If not, then use the following:
+
+    git submodule update --init
+    make bootstrap
+
+and update the local/etc/portage/make.profile to be a symlink to the right profile
+for your host. Then continue:
+
+    make
+
+and done!
+
+Prerequisites
+=============
+You need at least the following things on your system for this to work:
+ * bash
+ * autotools
+ * git
+ * the GNU versions of sed, find, xargs, wget, grep, make, install. They
+   may be called gsed, gfind, gxargs etc; this should be handled transparently.
+
