@@ -23,13 +23,15 @@ bootstrap: local/bin/emerge \
            local/etc/make.conf \
            local/etc/portage/categories \
            local/usr
+local/bin:
+	mkdir -p ${SAGE_ROOT}/local/bin
+upstream:
+	mkdir -p ${SAGE_ROOT}/upstream
 
 bootstrap_python: local/bin/python
-local/bin/python:
-	mkdir -p ${SAGE_ROOT}/upstream
-	if python --version 2>&1 | grep 2.7 > /dev/null; then \
-            mkdir -p local/bin; \
-            ln -sf `which python` local/bin/python; \
+local/bin/python: local/bin upstream
+	if PATH=local/bin/$$PATH python --version 2>&1 | grep 2.7 > /dev/null; then \
+            ln -sf `command -v python` local/bin/python; \
         else \
             build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/libpng/libpng-1.2.35_p5.ebuild; \
             build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/bzip2/bzip2-1.0.6.ebuild; \
@@ -39,29 +41,54 @@ local/bin/python:
             build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/python/python-2.7.3_p5.ebuild; \
         fi
 
-bootstrap_gnu_utils: .bootstrap_gnu_utils.stamp
-.bootstrap_gnu_utils.stamp:
-	mkdir -p local/bin
-	mkdir -p ${SAGE_ROOT}/upstream
-	for util in sed find xargs wget grep make install id; do \
-           if $$util --version 2>&1 | grep GNU > /dev/null; then \
+bootstrap_coreutils: .bootstrap_coreutils.stamp
+.bootstrap_coreutils.stamp: local/bin upstream
+	for util in sed grep make install id; do \
+           if PATH=local/bin:$$PATH $$util --version 2>&1 | grep GNU > /dev/null; then \
                true; \
            else\
                if g$$util --version 2>&1 > /dev/null; then \
-                   ln -sf `which g$$util` local/bin/$$util; \
+                   ln -sf `command -v g$$util` local/bin/$$util; \
                else \
                    build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/coreutils/coreutils-8.21.ebuild; \
+               fi \
+           fi \
+        done 
+	touch .bootstrap_coreutils.stamp
+
+bootstrap_findutils: .bootstrap_findutils.stamp
+.bootstrap_findutils.stamp: local/bin upstream
+	for util in find xargs; do \
+           if PATH=local/bin:$$PATH $$util --version 2>&1 | grep GNU > /dev/null; then \
+               true; \
+           else\
+               if g$$util --version 2>&1 > /dev/null; then \
+                   ln -sf `command -v g$$util` local/bin/$$util; \
+               else \
                    build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/findutils/findutils-4.4.2.ebuild; \
                fi \
            fi \
         done 
-	touch .bootstrap_gnu_utils.stamp
+	touch .bootstrap_findutils.stamp
 
-build/portage/src/configure: .bootstrap_gnu_utils.stamp
+bootstrap_wget: .bootstrap_wget.stamp
+.bootstrap_wget.stamp: local/bin upstream
+	if PATH=local/bin:$$PATH wget --version 2>&1 | grep GNU > /dev/null; then \
+            true; \
+        else \
+            if gwget --version 2>&1 > /dev/null; then \
+                ln -sf `command -v gwget` local/bin/wget; \
+            else \
+                build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/wget/wget-1.14.ebuild; \
+            fi \
+        fi 
+	touch .bootstrap_wget.stamp
+
+build/portage/src/configure: .bootstrap_wget.stamp .bootstrap_findutils.stamp .bootstrap_coreutils.stamp
 	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c ./autogen.sh) 
 
 local/bin/emerge: build/portage/src/configure local/bin/python .bootstrap_gnu_utils.stamp
-	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c "./configure --prefix=${SAGE_LOCAL} --with-offset-prefix=${SAGE_LOCAL} --with-portage-user=`id -un` --with-portage-group=`id -gn` --with-extra-path=/usr/local/bin:/usr/bin:/bin" )
+	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c './configure --prefix=${SAGE_LOCAL} --with-offset-prefix=${SAGE_LOCAL} --with-portage-user=`id -un` --with-portage-group=`id -gn` --with-extra-path=/usr/local/bin:/usr/bin:/bin' )
 	# install fails when it can't make certain symbolic links, so let's delete them if they exist
 	rm -f ${SAGE_LOCAL}/etc/make.globals
 	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c make && ${SAGE_ROOT}/sage -bash -c 'make install')
@@ -127,4 +154,5 @@ check: sage sage-starts
 	${SAGE_ROOT}/sage -t src/sage
 
 .PHONY: sage bootstrap all sage-doc sage_package_dependencies \
-libcsage local_packages sage-starts gcc
+libcsage local_packages sage-starts gcc bootstrap_coreutils \
+bootstrap_findutils bootstrap_wget
