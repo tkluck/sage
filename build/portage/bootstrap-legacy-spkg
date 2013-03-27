@@ -18,7 +18,7 @@ DIRNAME=`dirname "$1"`
 EBUILDDIR=`cd "$DIRNAME" && pwd`
 TARBALLNAME=`basename "$SRC_URI"`
 PACKAGENAME=`basename "$1"`
-(cd upstream && /bin/bash ../src/bin/sage-download-file "$SRC_URI" > "$TARBALLNAME")
+(cd upstream && bash ../src/bin/sage-download-file "$SRC_URI" > "$TARBALLNAME")
 
 rm -rf "build/artifacts/$PACKAGENAME"
 mkdir -p "build/artifacts/$PACKAGENAME"
