@@ -46,6 +46,9 @@ bootstrap_gnu_utils: .bootstrap_gnu_utils.stamp
            if ! $$util --version | grep -q GNU; then \
                if which g$$util; then \
                    ln -sf `which g$$util` local/bin/$$util; \
+               else \
+                   build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/coreutils/coreutils-8.21.ebuild; \
+                   build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/findutils/findutils-4.4.2.ebuild; \
                fi \
            fi \
         done 

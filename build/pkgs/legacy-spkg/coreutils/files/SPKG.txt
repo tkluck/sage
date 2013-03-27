@@ -1,0 +1,28 @@
+= coreutils =
+
+== Description ==
+
+GNU coreutils are GNU's implementation of common Unix tools such as
+find, install, make, etc.
+
+== License ==
+
+GPL
+
+== SPKG Maintainers ==
+
+None
+
+== Upstream Contact ==
+
+ * Website: https://www.gnu.org/software/coreutils/
+
+== Dependencies ==
+
+None
+
+== Changelog ==
+
+=== coreutils-8.21 (Timo Kluck, 26 March 2013)
+
+ * Initial packaging

@@ -1,0 +1,31 @@
+= findutils =
+
+== Description ==
+
+The GNU Find Utilities are the basic directory searching utilities of the GNU
+operating system. These programs are typically used in conjunction with other
+programs to provide modular and powerful directory search and file locating
+capabilities to other commands. The most well-known are find, locate, xargs.
+
+
+== License ==
+
+GPL
+
+== SPKG Maintainers ==
+
+None
+
+== Upstream Contact ==
+
+ * Website: https://www.gnu.org/software/findutils/
+
+== Dependencies ==
+
+None
+
+== Changelog ==
+
+=== findutils-4.4.2 (Timo Kluck, 26 March 2013)
+
+ * Initial packaging
