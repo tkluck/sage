@@ -12,7 +12,7 @@ legacy-spkg/mpc
 legacy-spkg/zlib"
 RDEPEND="${DEPEND}"
 S="${WORKDIR}"
-src_unpack() {
+src_prepare() {
         mv gcc-4.6.3 src
         cp -r "${FILESDIR}"/* . || die
 }
