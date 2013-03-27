@@ -6,7 +6,8 @@ SRC_URI="http://boxen.math.washington.edu/home/ohanar/sage-git/upstream/conway_p
 LICENSE=""
 SLOT="0"
 KEYWORDS="amd64-linux"
-DEPEND="legacy-spkg/sagenb"
+DEPEND="legacy-spkg/sagenb
+legacy-spkg/sage"
 RDEPEND="${DEPEND}"
 S="${WORKDIR}"
 src_prepare() {
