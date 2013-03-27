@@ -19,6 +19,8 @@ src_compile() {
         return 0
 }
 src_install() {
-	return 0
+	rm -rf ${EPREFIX}/share/sage/ext && \
+	mkdir -p ${EPREFIX}/share/sage && \
+	cp -r ${SAGE_ROOT}/src/ext ${EPREFIX}/share/sage/ext
 }
 

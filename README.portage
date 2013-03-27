@@ -23,6 +23,22 @@ You need at least the following things on your system for this to work:
  * bash
  * autotools
  * git
- * the GNU versions of sed, find, xargs, wget, grep, make, install. They
-   may be called gsed, gfind, gxargs etc; this should be handled transparently.
+
+Description of the bootstrapping process
+========================================
+The following packages each depend on the former:
+
+ * python2.7, GNU coreutils, GNU findutils
+ * portage prefix
+ * system cc
+ * mpir, mpfr, mpc
+ * (gcc)
+ * all the rest
+
+The first two bullets are bootstrapped by the Makefile if they are not on the
+system. This uses a very basic parser of the ebuilds.
+
+If the system cc is not gcc, or if it is not at least version 4.6, then we want
+to recompile all its dependencies with our own gcc after we have compiled it.
+
 
