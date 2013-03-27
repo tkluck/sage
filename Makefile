@@ -42,11 +42,12 @@ local/bin/python:
 
 bootstrap_gnu_utils: .bootstrap_gnu_utils.stamp
 .bootstrap_gnu_utils.stamp:
-	for util in sed find xargs wget grep make install; do \
-           if $$util --version | grep GNU > /dev/null; then \
+	mkdir -p local/bin
+	for util in sed find xargs wget grep make install id; do \
+           if $$util --version 2>&1 | grep GNU > /dev/null; then \
                true; \
            else\
-               if which g$$util; then \
+               if g$$util --version 2>&1 > /dev/null; then \
                    ln -sf `which g$$util` local/bin/$$util; \
                else \
                    build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/coreutils/coreutils-8.21.ebuild; \
@@ -56,7 +57,7 @@ bootstrap_gnu_utils: .bootstrap_gnu_utils.stamp
         done 
 	touch .bootstrap_gnu_utils.stamp
 
-build/portage/src/configure:
+build/portage/src/configure: .bootstrap_gnu_utils.stamp
 	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c ./autogen.sh) 
 
 local/bin/emerge: build/portage/src/configure local/bin/python .bootstrap_gnu_utils.stamp
