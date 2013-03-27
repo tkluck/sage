@@ -6,7 +6,7 @@ SRC_URI="http://boxen.math.washington.edu/home/ohanar/sage-git/upstream/blas-200
 LICENSE=""
 SLOT="0"
 KEYWORDS="amd64-linux"
-DEPEND=""
+DEPEND="legacy-spkg/sage_scripts"
 RDEPEND="${DEPEND}"
 S="${WORKDIR}"
 src_prepare() {

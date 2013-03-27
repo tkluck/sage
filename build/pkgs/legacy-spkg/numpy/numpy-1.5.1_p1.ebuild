@@ -8,6 +8,7 @@ SLOT="0"
 KEYWORDS="amd64-linux"
 DEPEND="legacy-spkg/python
 legacy-spkg/lapack
+legacy-spkg/sage_scripts
 legacy-spkg/blas
 legacy-spkg/atlas"
 RDEPEND="${DEPEND}"

@@ -7,7 +7,8 @@ LICENSE=""
 SLOT="0"
 KEYWORDS="amd64-linux"
 DEPEND="legacy-spkg/lapack
-legacy-spkg/python"
+legacy-spkg/python
+legacy-spkg/sage_scripts"
 RDEPEND="${DEPEND}"
 S="${WORKDIR}"
 src_prepare() {
