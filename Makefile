@@ -23,13 +23,11 @@ bootstrap: local/bin/emerge \
            local/etc/make.conf \
            local/etc/portage/categories \
            local/usr
-local/bin:
-	mkdir -p ${SAGE_ROOT}/local/bin
-upstream:
-	mkdir -p ${SAGE_ROOT}/upstream
 
-bootstrap_python: local/bin/python
-local/bin/python: local/bin upstream
+bootstrap_python: .bootstrap_python.stamp
+.bootstrap_python.stamp:
+	mkdir -p local/bin
+	mkdir -p upstream
 	if python --version 2>&1 | grep 2.7 > /dev/null; then \
             ln -sf `command -v python` local/bin/python; \
         else \
@@ -40,9 +38,12 @@ local/bin/python: local/bin upstream
             build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/sqlite/sqlite-3.7.5_p1.ebuild; \
             build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/python/python-2.7.3_p5.ebuild; \
         fi
+	touch .bootstrap_python.stamp
 
 bootstrap_coreutils: .bootstrap_coreutils.stamp
-.bootstrap_coreutils.stamp: local/bin upstream
+.bootstrap_coreutils.stamp:
+	mkdir -p local/bin
+	mkdir -p upstream
 	for util in install id; do \
            if PATH=local/bin:$$PATH $$util --version 2>&1 | grep GNU > /dev/null; then \
                true; \
@@ -57,7 +58,9 @@ bootstrap_coreutils: .bootstrap_coreutils.stamp
 	touch .bootstrap_coreutils.stamp
 
 bootstrap_findutils: .bootstrap_findutils.stamp
-.bootstrap_findutils.stamp: local/bin upstream .bootstrap_coreutils.stamp
+.bootstrap_findutils.stamp: .bootstrap_coreutils.stamp
+	mkdir -p local/bin
+	mkdir -p upstream
 	for util in find xargs; do \
            if PATH=local/bin:$$PATH $$util --version 2>&1 | grep GNU > /dev/null; then \
                true; \
@@ -72,7 +75,9 @@ bootstrap_findutils: .bootstrap_findutils.stamp
 	touch .bootstrap_findutils.stamp
 
 bootstrap_wget: .bootstrap_wget.stamp
-.bootstrap_wget.stamp: local/bin upstream .bootstrap_coreutils.stamp .bootstrap_findutils.stamp
+.bootstrap_wget.stamp: .bootstrap_coreutils.stamp .bootstrap_findutils.stamp
+	mkdir -p local/bin
+	mkdir -p upstream
 	if PATH=local/bin:$$PATH wget --version 2>&1 | grep GNU > /dev/null; then \
             true; \
         else \
@@ -85,7 +90,9 @@ bootstrap_wget: .bootstrap_wget.stamp
 	touch .bootstrap_wget.stamp
 
 bootstrap_sed: .bootstrap_sed.stamp
-.bootstrap_sed.stamp: local/bin upstream .bootstrap_coreutils.stamp .bootstrap_findutils.stamp
+.bootstrap_sed.stamp: .bootstrap_coreutils.stamp .bootstrap_findutils.stamp
+	mkdir -p local/bin
+	mkdir -p upstream
 	if PATH=local/bin:$$PATH sed --version 2>&1 | grep GNU > /dev/null; then \
             true; \
         else \
@@ -96,11 +103,11 @@ bootstrap_sed: .bootstrap_sed.stamp
             fi \
         fi 
 	touch .bootstrap_sed.stamp
-build/portage/src/configure: .bootstrap_wget.stamp .bootstrap_findutils.stamp .bootstrap_coreutils.stamp .bootstrap_sed.stamp
-	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c ./autogen.sh) 
 
 bootstrap_grep: .bootstrap_grep.stamp
-.bootstrap_grep.stamp: local/bin upstream .bootstrap_coreutils.stamp .bootstrap_findutils.stamp
+.bootstrap_grep.stamp: .bootstrap_coreutils.stamp .bootstrap_findutils.stamp
+	mkdir -p local/bin
+	mkdir -p upstream
 	if PATH=local/bin:$$PATH grep --version 2>&1 | grep GNU > /dev/null; then \
             true; \
         else \
@@ -113,7 +120,9 @@ bootstrap_grep: .bootstrap_grep.stamp
 	touch .bootstrap_grep.stamp
 
 bootstrap_make: .bootstrap_make.stamp
-.bootstrap_make.stamp: local/bin upstream .bootstrap_coreutils.stamp .bootstrap_findutils.stamp
+.bootstrap_make.stamp: .bootstrap_coreutils.stamp .bootstrap_findutils.stamp
+	mkdir -p local/bin
+	mkdir -p upstream
 	if PATH=local/bin:$$PATH make --version 2>&1 | grep GNU > /dev/null; then \
             true; \
         else \
@@ -128,7 +137,7 @@ bootstrap_make: .bootstrap_make.stamp
 build/portage/src/configure:
 	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c ./autogen.sh) 
 
-local/bin/emerge: build/portage/src/configure local/bin/python .bootstrap_wget.stamp .bootstrap_findutils.stamp .bootstrap_coreutils.stamp .bootstrap_sed.stamp \
+local/bin/emerge: build/portage/src/configure .bootstrap_python.stamp .bootstrap_wget.stamp .bootstrap_findutils.stamp .bootstrap_coreutils.stamp .bootstrap_sed.stamp \
                              .bootstrap_grep.stamp .bootstrap_make.stamp
 	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c './configure --prefix=${SAGE_LOCAL} --with-offset-prefix=${SAGE_LOCAL} --with-portage-user=`id -un` --with-portage-group=`id -gn` --with-extra-path=/usr/local/bin:/usr/bin:/bin' )
 	# install fails when it can't make certain symbolic links, so let's delete them if they exist
