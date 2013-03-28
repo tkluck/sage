@@ -1,0 +1,27 @@
+= make =
+
+== Description ==
+
+GNU make resolves dependencies and builds outdated file
+
+== License ==
+
+GPL
+
+== SPKG Maintainers ==
+
+None
+
+== Upstream Contact ==
+
+ * Website: https://www.gnu.org/software/make/
+
+== Dependencies ==
+
+None
+
+== Changelog ==
+
+=== make-3.82 (Timo Kluck, 27 March 2013)
+
+ * Initial packaging

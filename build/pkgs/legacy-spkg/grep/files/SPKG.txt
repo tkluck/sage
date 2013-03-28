@@ -1,0 +1,27 @@
+= grep =
+
+== Description ==
+
+GNU grep matches regular expressions in files or stdin
+
+== License ==
+
+GPL
+
+== SPKG Maintainers ==
+
+None
+
+== Upstream Contact ==
+
+ * Website: https://www.gnu.org/software/grep
+
+== Dependencies ==
+
+None
+
+== Changelog ==
+
+=== grep-2.9 (Timo Kluck, 27 March 2013)
+
+ * Initial packaging

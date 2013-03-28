@@ -43,7 +43,7 @@ local/bin/python: local/bin upstream
 
 bootstrap_coreutils: .bootstrap_coreutils.stamp
 .bootstrap_coreutils.stamp: local/bin upstream
-	for util in sed grep make install id; do \
+	for util in install id; do \
            if PATH=local/bin:$$PATH $$util --version 2>&1 | grep GNU > /dev/null; then \
                true; \
            else\
@@ -97,6 +97,36 @@ bootstrap_sed: .bootstrap_sed.stamp
         fi 
 	touch .bootstrap_sed.stamp
 build/portage/src/configure: .bootstrap_wget.stamp .bootstrap_findutils.stamp .bootstrap_coreutils.stamp .bootstrap_sed.stamp
+	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c ./autogen.sh) 
+
+bootstrap_grep: .bootstrap_grep.stamp
+.bootstrap_grep.stamp: local/bin upstream .bootstrap_coreutils.stamp .bootstrap_findutils.stamp
+	if PATH=local/bin:$$PATH grep --version 2>&1 | grep GNU > /dev/null; then \
+            true; \
+        else \
+            if ggrep --version 2>&1 > /dev/null; then \
+                ln -sf `command -v ggrep` local/bin/grep; \
+            else \
+                build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/grep/grep-2.9.ebuild; \
+            fi \
+        fi 
+	touch .bootstrap_grep.stamp
+
+bootstrap_make: .bootstrap_make.stamp
+.bootstrap_make.stamp: local/bin upstream .bootstrap_coreutils.stamp .bootstrap_findutils.stamp
+	if PATH=local/bin:$$PATH make --version 2>&1 | make GNU > /dev/null; then \
+            true; \
+        else \
+            if gmake --version 2>&1 > /dev/null; then \
+                ln -sf `command -v gmake` local/bin/make; \
+            else \
+                build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/make/make-3.82.ebuild; \
+            fi \
+        fi 
+	touch .bootstrap_make.stamp
+
+build/portage/src/configure: .bootstrap_wget.stamp .bootstrap_findutils.stamp .bootstrap_coreutils.stamp .bootstrap_sed.stamp \
+                             .bootstrap_grep.stamp .bootstrap_make.stamp
 	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c ./autogen.sh) 
 
 local/bin/emerge: build/portage/src/configure local/bin/python
