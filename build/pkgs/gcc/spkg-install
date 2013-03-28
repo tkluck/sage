@@ -93,5 +93,5 @@ $MAKE install
 
 
 # Force re-installation of mpir, mpfr and mpc with the GCC we just built.
-cd "$SAGE_ROOT/spkg/installed"
+cd "$SAGE_SPKG_INST"
 rm -f mpir-* mpfr-* mpc-*
