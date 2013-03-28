@@ -114,7 +114,7 @@ bootstrap_grep: .bootstrap_grep.stamp
 
 bootstrap_make: .bootstrap_make.stamp
 .bootstrap_make.stamp: local/bin upstream .bootstrap_coreutils.stamp .bootstrap_findutils.stamp
-	if PATH=local/bin:$$PATH make --version 2>&1 | make GNU > /dev/null; then \
+	if PATH=local/bin:$$PATH make --version 2>&1 | grep GNU > /dev/null; then \
             true; \
         else \
             if gmake --version 2>&1 > /dev/null; then \
