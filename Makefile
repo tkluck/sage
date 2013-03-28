@@ -125,11 +125,11 @@ bootstrap_make: .bootstrap_make.stamp
         fi 
 	touch .bootstrap_make.stamp
 
-build/portage/src/configure: .bootstrap_wget.stamp .bootstrap_findutils.stamp .bootstrap_coreutils.stamp .bootstrap_sed.stamp \
-                             .bootstrap_grep.stamp .bootstrap_make.stamp
+build/portage/src/configure:
 	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c ./autogen.sh) 
 
-local/bin/emerge: build/portage/src/configure local/bin/python
+local/bin/emerge: build/portage/src/configure local/bin/python .bootstrap_wget.stamp .bootstrap_findutils.stamp .bootstrap_coreutils.stamp .bootstrap_sed.stamp \
+                             .bootstrap_grep.stamp .bootstrap_make.stamp
 	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c './configure --prefix=${SAGE_LOCAL} --with-offset-prefix=${SAGE_LOCAL} --with-portage-user=`id -un` --with-portage-group=`id -gn` --with-extra-path=/usr/local/bin:/usr/bin:/bin' )
 	# install fails when it can't make certain symbolic links, so let's delete them if they exist
 	rm -f ${SAGE_LOCAL}/etc/make.globals
