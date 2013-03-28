@@ -114,7 +114,7 @@ bootstrap_grep: .bootstrap_grep.stamp
 
 bootstrap_make: .bootstrap_make.stamp
 .bootstrap_make.stamp: local/bin upstream .bootstrap_coreutils.stamp .bootstrap_findutils.stamp
-	if PATH=local/bin:$$PATH make --version 2>&1 | grep GNU > /dev/null; then \
+	if PATH=local/bin:$$PATH make --version 2>&1 | make GNU > /dev/null; then \
             true; \
         else \
             if gmake --version 2>&1 > /dev/null; then \
@@ -130,7 +130,7 @@ build/portage/src/configure:
 
 local/bin/emerge: build/portage/src/configure local/bin/python .bootstrap_wget.stamp .bootstrap_findutils.stamp .bootstrap_coreutils.stamp .bootstrap_sed.stamp \
                              .bootstrap_grep.stamp .bootstrap_make.stamp
-	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c './configure --prefix=${SAGE_LOCAL} --with-offset-prefix=${SAGE_LOCAL} --with-portage-user=`id -un` --with-portage-group=`id -gn` --with-extra-path=/usr/local/bin:/usr/bin:/bin PREFIX_PORTAGE_PYTHON="/usr/bin/env python"')
+	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c './configure --prefix=${SAGE_LOCAL} --with-offset-prefix=${SAGE_LOCAL} --with-portage-user=`id -un` --with-portage-group=`id -gn` --with-extra-path=/usr/local/bin:/usr/bin:/bin' )
 	# install fails when it can't make certain symbolic links, so let's delete them if they exist
 	rm -f ${SAGE_LOCAL}/etc/make.globals
 	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c make && ${SAGE_ROOT}/sage -bash -c 'make install')
