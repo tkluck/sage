@@ -154,9 +154,9 @@ local/bin/emerge: build/portage/src/configure .bootstrap_python.stamp .bootstrap
 	# install fails when it can't make certain symbolic links, so let's delete them if they exist
 	rm -f ${SAGE_LOCAL}/etc/make.globals
 	(cd ${PORTAGE_DIR}/src && PATH=${SAGE_LOCAL}/bin:$$PATH make install)
-	sed -i ${SAGE_LOCAL}/lib/portage/pym/_emerge/AbstractEbuildProcess.py 's/_enable_ipc_daemon = True/_enable_ipc_daemon = False/g'
+	sed -i 's/_enable_ipc_daemon = True/_enable_ipc_daemon = False/g' ${SAGE_LOCAL}/lib/portage/pym/_emerge/AbstractEbuildProcess.py
 	if COLLISION_IGNORE='**' ${SAGE_ROOT}/local/bin/emerge --oneshot legacy-spkg/portage; then \
-	   sed -i ${SAGE_LOCAL}/lib/portage/pym/_emerge/AbstractEbuildProcess.py 's/_enable_ipc_daemon = True/_enable_ipc_daemon = False/g' \
+	   sed -i 's/_enable_ipc_daemon = True/_enable_ipc_daemon = False/g' ${SAGE_LOCAL}/lib/portage/pym/_emerge/AbstractEbuildProcess.py \
            true; \
         else \
            rm local/bin/emerge; \
