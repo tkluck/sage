@@ -29,5 +29,5 @@ tar -xf "$TARBALLNAME"
 rm "$TARBALLNAME"
 mv * src
 cp -r "$EBUILDDIR"/files/* .
-SAGE_ROOT=../../.. ../../../sage -sh -c "SAGE_LOCAL=`cd ../local_bootstrap && pwd` ./spkg-install"
+SAGE_ROOT=../../.. ../../../sage -sh -c "SAGE_LOCAL=`cd ../local && pwd` ./spkg-install"
 
