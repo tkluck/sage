@@ -21,6 +21,6 @@ src_compile() {
         return 0
 }
 src_install() {
-        ${SAGE_ROOT}/sage -sh -c ./spkg-install || die
+        ABI= CFLAGS= CXXFLAGS= LDFLAGS= ABI= CFLAGS= CXXFLAGS= LDFLAGS= ${SAGE_ROOT}/sage -sh -c  ./spkg-install || die
 }
 
