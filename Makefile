@@ -55,7 +55,7 @@ bootstrap_coreutils: .bootstrap_coreutils.stamp
 .bootstrap_coreutils.stamp:
 	mkdir -p local/bin
 	mkdir -p upstream
-	for util in install id; do \
+	for util in install id stat; do \
            if PATH=local/bin:$$PATH $$util --version 2>&1 | grep GNU > /dev/null; then \
                true; \
            else\
