@@ -199,7 +199,7 @@ gcc: ${BOOTSTRAP} .rebuilt_gccs_dependencies.stamp
             if PATH=local/bin:$$PATH gcc --version | grep 4.7 > /dev/null; then \
                 true; \
             else \
-                ${SAGE_ROOT}/build/emerge --noreplace --oneshot legacy-spkg/gcc; \
+                ${SAGE_LOCAL}/bin/emerge --noreplace --oneshot legacy-spkg/gcc; \
             fi; \
         fi
 	# TODO: find a way to make sure this happens!!
