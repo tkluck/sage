@@ -31,6 +31,7 @@ senv: local/bin/senv
 local/bin/senv:
 	mkdir -p local/bin
 	cp build/portage/senv local/bin
+	chmod a+x local/bin/senv
 	# portage prefix checks shebangs for common interpreters and makes them point into the
 	# prefix, so they shoule be there
 	cd local/bin && ln -s `command -v bash` && ln -s `command -v sh` && ln -s `command -v perl`
