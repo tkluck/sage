@@ -43,7 +43,7 @@ bootstrap_python: .bootstrap_python.stamp
 	if PATH=local/bin:$$PATH python --version 2>&1 | grep 2.7 > /dev/null; then \
             true; \
         else \
-            build/portage/bootstrap_prefix.sh ${SAGE-LOCAL} python \
+            build/portage/bootstrap_prefix.sh ${SAGE_LOCAL} python ; \
         fi
 	touch .bootstrap_python.stamp
 
