@@ -42,14 +42,9 @@ bootstrap_python: .bootstrap_python.stamp
 .bootstrap_python.stamp:
 	mkdir -p local/bin
 	mkdir -p upstream
-	if python --version 2>&1 | grep 2.7 > /dev/null; then \
+	if PATH=local/bin:$$PATH python --version 2>&1 | grep 2.7 > /dev/null; then \
             ln -sf `command -v python` local/bin/python; \
         else \
-            build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/libpng/libpng-1.2.35_p5.ebuild; \
-            build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/bzip2/bzip2-1.0.6.ebuild; \
-            build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/zlib/zlib-1.2.6_p0.ebuild; \
-            build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/readline/readline-6.2_p3.ebuild; \
-            build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/sqlite/sqlite-3.7.5_p1.ebuild; \
             build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/python/python-2.7.3_p5.ebuild; \
         fi
 	touch .bootstrap_python.stamp
