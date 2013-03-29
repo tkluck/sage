@@ -1,0 +1,22 @@
+# HG changeset patch
+# User Michael Haubenwallner <haubi@gentoo.org>
+# Date 1336718930 -7200
+# Branch 2.7
+# Node ID 08934052d3658f3a789cb8053ea50c2946a06391
+# Parent  87d3492b75ecf4fbc7a4eedc151ff01aa62c6295
+HP-UX headers before HP-UX 11.31 (11iv3) lack definition of SEM_FAILED
+
+diff -r 87d3492b75ec -r 08934052d365 Modules/_multiprocessing/semaphore.c
+--- a/Modules/_multiprocessing/semaphore.c	Fri May 11 08:48:50 2012 +0200
++++ b/Modules/_multiprocessing/semaphore.c	Fri May 11 08:48:50 2012 +0200
+@@ -190,6 +190,10 @@
+  * Unix definitions
+  */
+ 
++#ifndef SEM_FAILED
++#define SEM_FAILED (SEM_HANDLE)-1
++#endif
++
+ #define SEM_CLEAR_ERROR()
+ #define SEM_GET_LAST_ERROR() 0
+ #define SEM_CREATE(name, val, max) sem_open(name, O_CREAT | O_EXCL, 0600, val)

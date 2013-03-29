@@ -1,0 +1,20 @@
+# HG changeset patch
+# User Markus Duft <mduft@gentoo.org>
+# Date 1336718932 -7200
+# Branch 2.7
+# Node ID f8bc2f32d80b5a9459e829947dad56839d8d15de
+# Parent  003423971ea7cde809454b60f4aae59d8f987d52
+Interix 64-bits patch
+
+diff -r 003423971ea7 -r f8bc2f32d80b setup.py
+--- a/setup.py	Fri May 11 08:48:52 2012 +0200
++++ b/setup.py	Fri May 11 08:48:52 2012 +0200
+@@ -649,7 +649,7 @@
+             # python just looks only at the 32-bits libs here :(
+             if self.compiler.find_library_file(lib_dirs, 'crypt_i'):
+                 libs = ['crypt_i']
+-        elif self.compiler.find_library_file(lib_dirs, 'crypt'):
++        elif self.compiler.find_library_file(lib_dirs, 'crypt') or (platform.startswith('interix')):
+             libs = ['crypt']
+         exts.append( Extension('crypt', ['cryptmodule.c'], libraries=libs) )
+ 

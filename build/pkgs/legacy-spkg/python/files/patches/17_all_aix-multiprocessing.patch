@@ -1,0 +1,26 @@
+# HG changeset patch
+# User Michael Haubenwallner <haubi@gentoo.org>
+# Date 1336718932 -7200
+# Branch 2.7
+# Node ID 003423971ea7cde809454b60f4aae59d8f987d52
+# Parent  cd977c9f9159a1534e939f029dd39c7e0a3f6d55
+http://bugs.python.org/issue3876
+https://bugs.gentoo.org/show_bug.cgi?id=378915
+
+diff -r cd977c9f9159 -r 003423971ea7 Modules/_multiprocessing/multiprocessing.c
+--- a/Modules/_multiprocessing/multiprocessing.c	Fri May 11 08:48:52 2012 +0200
++++ b/Modules/_multiprocessing/multiprocessing.c	Fri May 11 08:48:52 2012 +0200
+@@ -16,6 +16,13 @@
+ #endif
+ #endif
+ 
++#ifndef CMSG_SPACE
++#define CMSG_SPACE(len) (_CMSG_ALIGN(sizeof(struct cmsghdr)) + _CMSG_ALIGN(len))
++#endif
++#ifndef CMSG_LEN
++#define CMSG_LEN(len) (_CMSG_ALIGN(sizeof(struct cmsghdr)) + (len))
++#endif
++
+ PyObject *create_win32_namespace(void);
+ 
+ PyObject *pickle_dumps, *pickle_loads, *pickle_protocol;

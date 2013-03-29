@@ -2,7 +2,7 @@
 EAPI=5
 DECRIPTION="python"
 HOMEPAGE=""
-SRC_URI="http://dev.gentoo.org/~grobian/distfiles/python-2.7.3-patched.tar.bz2"
+SRC_URI="http://boxen.math.washington.edu/home/ohanar/sage-git/upstream/python-2.7.3.tar.bz2"
 LICENSE=""
 SLOT="0"
 KEYWORDS="amd64-linux"
@@ -13,7 +13,7 @@ legacy-spkg/libpng"
 RDEPEND="${DEPEND}"
 S="${WORKDIR}"
 src_prepare() {
-        mv Python-2.7.3 src
+        mv python-2.7.3 src
         cp -r "${FILESDIR}"/* . || die
 }
 src_configure() {

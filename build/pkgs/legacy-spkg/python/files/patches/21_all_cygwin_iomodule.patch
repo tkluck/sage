@@ -1,0 +1,35 @@
+# HG changeset patch
+# User Antoine Pitrou <solipsis@pitrou.net>
+# Date 1333230787 -7200
+# Branch 2.7
+# Node ID 5878ae92bbd9ff44974ce874d978936f40e2fbf5
+# Parent  7662ed8e449feebf8359244d7ac6dd8f1a8f3173
+Issue #14437: Fix building the _io module under Cygwin.
+
+diff -r 7662ed8e449f -r 5878ae92bbd9 Misc/NEWS
+--- a/Misc/NEWS	Thu May 10 17:45:49 2012 -0700
++++ b/Misc/NEWS	Sat Mar 31 23:53:07 2012 +0200
+@@ -12,6 +12,11 @@ Library
+ - Issue #6884: Fix long-standing bugs with MANIFEST.in parsing in distutils
+   on Windows.
+ 
++Build
++-----
++
++- Issue #14437: Fix building the _io module under Cygwin.
++
+ 
+ What's New in Python 2.7.3 release candidate 2?
+ ===============================================
+diff -r 7662ed8e449f -r 5878ae92bbd9 Modules/_io/_iomodule.h
+--- a/Modules/_io/_iomodule.h	Thu May 10 17:45:49 2012 -0700
++++ b/Modules/_io/_iomodule.h	Sat Mar 31 23:53:07 2012 +0200
+@@ -72,7 +72,7 @@ typedef struct {
+     PyObject *filename; /* Not used, but part of the IOError object */
+     Py_ssize_t written;
+ } PyBlockingIOErrorObject;
+-PyAPI_DATA(PyObject *) PyExc_BlockingIOError;
++extern PyObject *PyExc_BlockingIOError;
+ 
+ /*
+  * Offset type for positioning.

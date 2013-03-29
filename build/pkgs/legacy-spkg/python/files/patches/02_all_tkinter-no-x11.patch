@@ -1,0 +1,27 @@
+# HG changeset patch
+# User Fabian Groffen <grobian@gentoo.org>
+# Date 1336718929 -7200
+# Branch 2.7
+# Node ID 50f0a2d5801d5440cc67bf91e43911ce6f3c2d24
+# Parent  44a4c63967bd911cf883f59c4f5e9bd87cd087ff
+avoid bugs like http://bugs.gentoo.org/show_bug.cgi?id=349320
+
+diff -r 44a4c63967bd -r 50f0a2d5801d setup.py
+--- a/setup.py	Fri May 11 08:48:49 2012 +0200
++++ b/setup.py	Fri May 11 08:48:49 2012 +0200
+@@ -1624,9 +1624,12 @@
+         if platform in ['aix3', 'aix4']:
+             libs.append('ld')
+ 
+-        # Finally, link with the X11 libraries (not appropriate on cygwin)
+-        if platform != "cygwin":
+-            libs.append('X11')
++        # disable adding -lX11, it breaks on Darwin with aqua TK, but
++        # isn't necessary either, tk already links itself against X11 or
++        # whatever graphical mode it is compiled to.
++        ## Finally, link with the X11 libraries (not appropriate on cygwin)
++        #if platform != "cygwin":
++        #    libs.append('X11')
+ 
+         ext = Extension('_tkinter', ['_tkinter.c', 'tkappinit.c'],
+                         define_macros=[('WITH_APPINIT', 1)] + defs,

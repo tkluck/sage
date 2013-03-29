@@ -1,0 +1,26 @@
+# HG changeset patch
+# User Stuart Shelton <srcshelton@gmail.com>
+# Date 1336718932 -7200
+# Branch 2.7
+# Node ID 9d6dc9900865e7f3a89df468d79262b64e1b0b51
+# Parent  de666713ccfade6568513e24e78108b4e76ea73b
+make a shared libpython.so on IRIX too
+
+http://bugs.python.org/issue7718
+
+diff -r de666713ccfa -r 9d6dc9900865 configure.in
+--- a/configure.in	Fri May 11 08:48:52 2012 +0200
++++ b/configure.in	Fri May 11 08:48:52 2012 +0200
+@@ -779,6 +779,12 @@
+ 	  RUNSHARED=LD_LIBRARY_PATH=`pwd`:${LD_LIBRARY_PATH}
+ 	  INSTSONAME="$LDLIBRARY".$SOVERSION
+           ;;
++    IRIX*)
++          LDLIBRARY='libpython$(VERSION).so'
++          BLDLIBRARY='-L. -lpython$(VERSION)'
++          RUNSHARED=LD_LIBRARYN32_PATH=`pwd`:${LD_LIBRARYN32_PATH}
++          INSTSONAME="$LDLIBRARY".$SOVERSION
++          ;;
+     Linux*|GNU*|NetBSD*|FreeBSD*|DragonFly*|OpenBSD*)
+ 	  LDLIBRARY='libpython$(VERSION).so'
+ 	  BLDLIBRARY='-L. -lpython$(VERSION)'

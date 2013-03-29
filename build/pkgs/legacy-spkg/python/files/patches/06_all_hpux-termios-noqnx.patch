@@ -1,0 +1,22 @@
+# HG changeset patch
+# User Michael Haubenwallner <haubi@gentoo.org>
+# Date 1336718930 -7200
+# Branch 2.7
+# Node ID 87d3492b75ecf4fbc7a4eedc151ff01aa62c6295
+# Parent  43b98d7bde680cf31876d1fbb80b26224b49660e
+fixed termios module for non-qnx like hpux
+
+http://bugs.python.org/issue6308
+
+diff -r 43b98d7bde68 -r 87d3492b75ec Include/pyport.h
+--- a/Include/pyport.h	Fri May 11 08:48:50 2012 +0200
++++ b/Include/pyport.h	Fri May 11 08:48:50 2012 +0200
+@@ -622,7 +622,7 @@
+ /* On QNX 6, struct termio must be declared by including sys/termio.h
+    if TCGETA, TCSETA, TCSETAW, or TCSETAF are used.  sys/termio.h must
+    be included before termios.h or it will generate an error. */
+-#ifdef HAVE_SYS_TERMIO_H
++#if defined(HAVE_SYS_TERMIO_H) && defined(__QNX__)
+ #include <sys/termio.h>
+ #endif
+ 

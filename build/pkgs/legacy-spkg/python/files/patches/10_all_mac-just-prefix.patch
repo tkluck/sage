@@ -1,0 +1,75 @@
+# HG changeset patch
+# User Fabian Groffen <grobian@gentoo.org>
+# Date 1336718931 -7200
+# Branch 2.7
+# Node ID 62bcd04d282b01e18bc985747501bb2648b44bd7
+# Parent  765f0a2861297e707da6a50687d590eef2ea1f2a
+- don't mess with arch flags
+- avoid rm complaining it has nothing to remove (xargs -r GNU extension)
+- don't add framework paths to the default search path, but the prefix
+  dirs instead
+- make the original autoconf ${prefix} available as
+  FRAMEWORKUNIXTOOLSPREFIX
+
+diff -r 765f0a286129 -r 62bcd04d282b Mac/PythonLauncher/Makefile.in
+--- a/Mac/PythonLauncher/Makefile.in	Fri May 11 08:48:50 2012 +0200
++++ b/Mac/PythonLauncher/Makefile.in	Fri May 11 08:48:51 2012 +0200
+@@ -54,7 +54,7 @@
+ 		--resource=$(srcdir)/factorySettings.plist \
+ 		--plist Info.plist \
+ 		build
+-	find "Python Launcher.app" -name '.svn' -print0 | xargs -0 rm -r
++	find "Python Launcher.app" -name '.svn' -print0 | xargs -r -0 rm -r
+ 		
+ 
+ FileSettings.o: $(srcdir)/FileSettings.m
+diff -r 765f0a286129 -r 62bcd04d282b Makefile.pre.in
+--- a/Makefile.pre.in	Fri May 11 08:48:50 2012 +0200
++++ b/Makefile.pre.in	Fri May 11 08:48:51 2012 +0200
+@@ -123,6 +123,7 @@
+ PYTHONFRAMEWORKDIR=	@PYTHONFRAMEWORKDIR@
+ PYTHONFRAMEWORKPREFIX=	@PYTHONFRAMEWORKPREFIX@
+ PYTHONFRAMEWORKINSTALLDIR= @PYTHONFRAMEWORKINSTALLDIR@
++FRAMEWORKUNIXTOOLSPREFIX=@FRAMEWORKUNIXTOOLSPREFIX@
+ # Deployment target selected during configure, to be checked
+ # by distutils. The export statement is needed to ensure that the
+ # deployment target is active during build.
+diff -r 765f0a286129 -r 62bcd04d282b configure.in
+--- a/configure.in	Fri May 11 08:48:50 2012 +0200
++++ b/configure.in	Fri May 11 08:48:51 2012 +0200
+@@ -1648,11 +1648,6 @@
+ case $ac_sys_system/$ac_sys_release in
+   Darwin/@<:@01567@:>@\..*) 
+     LIBTOOL_CRUFT="-framework System -lcc_dynamic"
+-    if test "${enable_universalsdk}"; then
+-	    :
+-    else
+-        LIBTOOL_CRUFT="${LIBTOOL_CRUFT} -arch_only `/usr/bin/arch`"
+-    fi
+     LIBTOOL_CRUFT=$LIBTOOL_CRUFT' -install_name $(PYTHONFRAMEWORKINSTALLDIR)/Versions/$(VERSION)/$(PYTHONFRAMEWORK)'
+     LIBTOOL_CRUFT=$LIBTOOL_CRUFT' -compatibility_version $(VERSION) -current_version $(VERSION)';;
+   Darwin/*)
+@@ -1703,7 +1698,7 @@
+ 	#ARCH_RUN_32BIT="true"
+     fi
+ 
+-    LIBTOOL_CRUFT=$LIBTOOL_CRUFT" -lSystem -lSystemStubs -arch_only ${MACOSX_DEFAULT_ARCH}"
++    LIBTOOL_CRUFT=$LIBTOOL_CRUFT" -lSystem"
+     LIBTOOL_CRUFT=$LIBTOOL_CRUFT' -install_name $(PYTHONFRAMEWORKINSTALLDIR)/Versions/$(VERSION)/$(PYTHONFRAMEWORK)'
+     LIBTOOL_CRUFT=$LIBTOOL_CRUFT' -compatibility_version $(VERSION) -current_version $(VERSION)';;
+ esac
+diff -r 765f0a286129 -r 62bcd04d282b setup.py
+--- a/setup.py	Fri May 11 08:48:50 2012 +0200
++++ b/setup.py	Fri May 11 08:48:51 2012 +0200
+@@ -427,9 +427,9 @@
+             # building a framework with different architectures than
+             # the one that is currently installed (issue #7473)
+             add_dir_to_list(self.compiler.library_dirs,
+-                            sysconfig.get_config_var("LIBDIR"))
++                            sys.prefix + "/@@GENTOO_LIBDIR@@")
+             add_dir_to_list(self.compiler.include_dirs,
+-                            sysconfig.get_config_var("INCLUDEDIR"))
++                            sys.prefix + "/include")
+ 
+         try:
+             have_unicode = unicode

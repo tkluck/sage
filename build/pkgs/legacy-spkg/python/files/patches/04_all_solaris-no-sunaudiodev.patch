@@ -1,0 +1,26 @@
+# HG changeset patch
+# User Fabian Groffen <grobian@gentoo.org>
+# Date 1336718929 -7200
+# Branch 2.7
+# Node ID 96b57139d0526e958a11391a4e679f7d6c858f57
+# Parent  cbc5a08bad11edf091ca2e093eca704159efc615
+this fails to compile on OpenSolaris at least, do we need it?
+
+diff -r cbc5a08bad11 -r 96b57139d052 setup.py
+--- a/setup.py	Fri May 11 08:48:49 2012 +0200
++++ b/setup.py	Fri May 11 08:48:49 2012 +0200
+@@ -1354,11 +1354,9 @@
+         else:
+             missing.append('ossaudiodev')
+ 
+-        if platform == 'sunos5':
+-            # SunOS specific modules
+-            exts.append( Extension('sunaudiodev', ['sunaudiodev.c']) )
+-        else:
+-            missing.append('sunaudiodev')
++        # this fails to compile on OpenSolaris, and frankly I don't
++        # care, who needs this?
++        missing.append('sunaudiodev')
+ 
+         if platform == 'darwin':
+             # _scproxy

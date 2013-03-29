@@ -1,0 +1,38 @@
+# HG changeset patch
+# User Michael Haubenwallner <haubi@gentoo.org>
+# Date 1336718931 -7200
+# Branch 2.7
+# Node ID 5c175f13e3d62973bcaf94ef2eb549dac4888af5
+# Parent  4d4d6388c3a6590d4061d7bc4e1256099104e31e
+With a little help from my friend, the native-cctools wrapping ld to
+support '-soname' flag on AIX, we can provide full soname support there
+(#213277).  However, this patch is not for upstream, as they cannot rely
+on that ld wrapper: They would have to do the aix-soname magic themself
+instead.
+
+diff -r 4d4d6388c3a6 -r 5c175f13e3d6 Modules/ld_so_aix.in
+--- a/Modules/ld_so_aix.in	Fri May 11 08:48:51 2012 +0200
++++ b/Modules/ld_so_aix.in	Fri May 11 08:48:51 2012 +0200
+@@ -148,9 +148,9 @@
+   shift
+ done
+ 
+-if test "$objfile" = "libpython@VERSION@.so"; then
++case "$objfile" in "libpython@VERSION@.so"*)
+   ldsocoremode="true" 
+-fi
++;; esac
+ 
+ if test -z "$objs"; then
+   echo "ld_so_aix: No input files; exiting."
+diff -r 4d4d6388c3a6 -r 5c175f13e3d6 configure.in
+--- a/configure.in	Fri May 11 08:48:51 2012 +0200
++++ b/configure.in	Fri May 11 08:48:51 2012 +0200
+@@ -820,6 +820,7 @@
+     AIX*)
+ 	LDLIBRARY='libpython$(VERSION).so'
+ 	RUNSHARED=LIBPATH=`pwd`:${LIBPATH}
++	INSTSONAME="$LDLIBRARY".$SOVERSION
+ 	;;
+ 
+   esac

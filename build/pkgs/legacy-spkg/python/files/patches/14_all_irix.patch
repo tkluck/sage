@@ -1,0 +1,267 @@
+# HG changeset patch
+# User Fabian Groffen <grobian@gentoo.org>
+# Date 1336718932 -7200
+# Branch 2.7
+# Node ID de666713ccfade6568513e24e78108b4e76ea73b
+# Parent  5c175f13e3d62973bcaf94ef2eb549dac4888af5
+IRIX patch by Frank Everdij and Stuart Shelton
+
+Added configure check for alloca.h to enable the guards for bug #286943
+
+diff -r 5c175f13e3d6 -r de666713ccfa Lib/test/test_fileio.py
+--- a/Lib/test/test_fileio.py	Fri May 11 08:48:51 2012 +0200
++++ b/Lib/test/test_fileio.py	Fri May 11 08:48:52 2012 +0200
+@@ -267,7 +267,8 @@
+                     self.assertEqual(f.writable(), True)
+                     if sys.platform != "darwin" and \
+                        'bsd' not in sys.platform and \
+-                       not sys.platform.startswith('sunos'):
++                       not sys.platform.startswith('sunos') and \
++                       not sys.platform.startswith('irix'):
+                         # Somehow /dev/tty appears seekable on some BSDs
+                         self.assertEqual(f.seekable(), False)
+                     self.assertEqual(f.isatty(), True)
+diff -r 5c175f13e3d6 -r de666713ccfa Modules/_ctypes/_ctypes.c
+--- a/Modules/_ctypes/_ctypes.c	Fri May 11 08:48:51 2012 +0200
++++ b/Modules/_ctypes/_ctypes.c	Fri May 11 08:48:52 2012 +0200
+@@ -123,7 +123,10 @@
+ #  define GetProcAddress GetProcAddressA
+ # endif
+ #else
+-#include "ctypes_dlfcn.h"
++# include "ctypes_dlfcn.h"
++#endif
++#ifdef HAVE_ALLOCA_H
++#include <alloca.h>
+ #endif
+ #include "ctypes.h"
+ 
+@@ -3910,7 +3913,7 @@
+         }
+     }
+ 
+-    result = _ctypes_callproc(pProc,
++    result = _ctypes_callproc((PPROC)pProc,
+                        callargs,
+ #ifdef MS_WIN32
+                        piunk,
+diff -r 5c175f13e3d6 -r de666713ccfa Modules/_ctypes/_ctypes_test.c
+--- a/Modules/_ctypes/_ctypes_test.c	Fri May 11 08:48:51 2012 +0200
++++ b/Modules/_ctypes/_ctypes_test.c	Fri May 11 08:48:52 2012 +0200
+@@ -383,8 +383,8 @@
+ EXPORT(unsigned PY_LONG_LONG) last_tf_arg_u;
+ 
+ struct BITS {
+-    int A: 1, B:2, C:3, D:4, E: 5, F: 6, G: 7, H: 8, I: 9;
+-    short M: 1, N: 2, O: 3, P: 4, Q: 5, R: 6, S: 7;
++    unsigned int A: 1, B:2, C:3, D:4, E: 5, F: 6, G: 7, H: 8, I: 9;
++    unsigned short M: 1, N: 2, O: 3, P: 4, Q: 5, R: 6, S: 7;
+ };
+ 
+ DL_EXPORT(void) set_bitfields(struct BITS *bits, char name, int value)
+diff -r 5c175f13e3d6 -r de666713ccfa Modules/_ctypes/callproc.c
+--- a/Modules/_ctypes/callproc.c	Fri May 11 08:48:51 2012 +0200
++++ b/Modules/_ctypes/callproc.c	Fri May 11 08:48:52 2012 +0200
+@@ -73,6 +73,10 @@
+ #include <malloc.h>
+ #endif
+ 
++#ifdef HAVE_ALLOCA_H
++#include <alloca.h>
++#endif
++
+ #include <ffi.h>
+ #include "ctypes.h"
+ 
+@@ -474,7 +478,7 @@
+ #ifdef MS_WIN32
+             "<cparam '%c' (%I64d)>",
+ #else
+-            "<cparam '%c' (%qd)>",
++            "<cparam '%c' (%lld)>",
+ #endif
+             self->tag, self->value.q);
+         break;
+@@ -824,7 +828,7 @@
+ #endif
+         delta =
+ #endif
+-                ffi_call(&cif, (void *)pProc, resmem, avalues);
++                ffi_call(&cif, FFI_FN(pProc), resmem, avalues);
+ #ifdef MS_WIN32
+ #ifndef DONT_USE_SEH
+     }
+diff -r 5c175f13e3d6 -r de666713ccfa Modules/_ctypes/malloc_closure.c
+--- a/Modules/_ctypes/malloc_closure.c	Fri May 11 08:48:51 2012 +0200
++++ b/Modules/_ctypes/malloc_closure.c	Fri May 11 08:48:52 2012 +0200
+@@ -5,12 +5,18 @@
+ #include <Python.h>
+ #include <ffi.h>
+ #ifdef MS_WIN32
+-#include <windows.h>
++# include <windows.h>
+ #else
+-#include <sys/mman.h>
+-#include <unistd.h>
+-# if !defined(MAP_ANONYMOUS) && defined(MAP_ANON)
+-#  define MAP_ANONYMOUS MAP_ANON
++# include <sys/mman.h>
++# include <unistd.h>
++# if !defined(MAP_ANONYMOUS)
++#  if defined(MAP_ANON)
++#   define MAP_ANONYMOUS MAP_ANON
++#  else /* For open(), O_RDWR, etc. */
++#   include <sys/types.h>
++#   include <sys/stat.h>
++#   include <fcntl.h>
++#  endif
+ # endif
+ #endif
+ #include "ctypes.h"
+@@ -37,6 +43,8 @@
+ static void more_core(void)
+ {
+     ITEM *item;
++    int flags = MAP_PRIVATE;
++    int devzero = -1;
+     int count, i;
+ 
+ /* determine the pagesize */
+@@ -68,12 +76,23 @@
+     if (item == NULL)
+         return;
+ #else
++#ifdef MAP_ANONYMOUS
++        /* BSD way to map anonymous memory */
++        flags |= MAP_ANONYMOUS;
++#else
++        /* SVR4 method to map anonymous memory is to open /dev/zero */
++        devzero = open("/dev/zero", O_RDWR);
++        if (devzero == -1)
++            return;
++#endif
+     item = (ITEM *)mmap(NULL,
+                         count * sizeof(ITEM),
+                         PROT_READ | PROT_WRITE | PROT_EXEC,
+-                        MAP_PRIVATE | MAP_ANONYMOUS,
+-                        -1,
++                        flags,
++                        devzero,
+                         0);
++    if (devzero != -1)
++        close(devzero);
+     if (item == (void *)MAP_FAILED)
+         return;
+ #endif
+diff -r 5c175f13e3d6 -r de666713ccfa Modules/_ctypes/stgdict.c
+--- a/Modules/_ctypes/stgdict.c	Fri May 11 08:48:51 2012 +0200
++++ b/Modules/_ctypes/stgdict.c	Fri May 11 08:48:52 2012 +0200
+@@ -8,6 +8,9 @@
+ #include <windows.h>
+ #include <malloc.h>
+ #endif
++#ifdef HAVE_ALLOCA_H
++#include <alloca.h>
++#endif
+ #include "ctypes.h"
+ 
+ /******************************************************************/
+diff -r 5c175f13e3d6 -r de666713ccfa Modules/_cursesmodule.c
+--- a/Modules/_cursesmodule.c	Fri May 11 08:48:51 2012 +0200
++++ b/Modules/_cursesmodule.c	Fri May 11 08:48:52 2012 +0200
+@@ -118,9 +118,6 @@
+     curses module in other ways.  So the code will just specify
+     explicit prototypes here. */
+ extern int setupterm(char *,int,int *);
+-#ifdef __sgi
+-#include <term.h>
+-#endif
+ 
+ #if !defined(HAVE_NCURSES_H) && (defined(sgi) || defined(__sun) || defined(SCO5))
+ #define STRICT_SYSV_CURSES       /* Don't use ncurses extensions */
+diff -r 5c175f13e3d6 -r de666713ccfa Modules/mmapmodule.c
+--- a/Modules/mmapmodule.c	Fri May 11 08:48:51 2012 +0200
++++ b/Modules/mmapmodule.c	Fri May 11 08:48:52 2012 +0200
+@@ -53,6 +53,10 @@
+ #include <sys/mman.h>
+ #include <sys/stat.h>
+ 
++#ifdef HAVE_FCNTL_H
++#include <fcntl.h>
++#endif
++
+ #if defined(HAVE_SYSCONF) && defined(_SC_PAGESIZE)
+ static int
+ my_getpagesize(void)
+diff -r 5c175f13e3d6 -r de666713ccfa Modules/posixmodule.c
+--- a/Modules/posixmodule.c	Fri May 11 08:48:51 2012 +0200
++++ b/Modules/posixmodule.c	Fri May 11 08:48:52 2012 +0200
+@@ -167,7 +167,9 @@
+ extern char        *ctermid_r(char *);
+ #endif
+ 
+-#ifndef HAVE_UNISTD_H
++#ifdef HAVE_UNISTD_H
++#include <unistd.h>
++#else
+ #if defined(PYCC_VACPP)
+ extern int mkdir(char *);
+ #else
+diff -r 5c175f13e3d6 -r de666713ccfa Modules/python.c
+--- a/Modules/python.c	Fri May 11 08:48:51 2012 +0200
++++ b/Modules/python.c	Fri May 11 08:48:52 2012 +0200
+@@ -3,7 +3,10 @@
+ #include "Python.h"
+ 
+ #ifdef __FreeBSD__
+-#include <floatingpoint.h>
++# include <floatingpoint.h>
++#endif
++#ifdef __sgi
++# include <sys/fpu.h>
+ #endif
+ 
+ #ifdef __linux__
+@@ -33,6 +36,12 @@
+ 	m = fpgetmask();
+ 	fpsetmask(m & ~FP_X_OFL);
+ #endif
++#ifdef __sgi
++	unsigned int m;
++
++	m = get_fpc_csr();
++	set_fpc_csr(m & ~FPCSR_FLUSH_ZERO);
++#endif
+ 
+ #ifdef __linux__
+ 	char *process_name = getenv("GENTOO_PYTHON_PROCESS_NAME");
+diff -r 5c175f13e3d6 -r de666713ccfa configure.in
+--- a/configure.in	Fri May 11 08:48:51 2012 +0200
++++ b/configure.in	Fri May 11 08:48:52 2012 +0200
+@@ -1371,7 +1371,7 @@
+ # checks for header files
+ AC_HEADER_STDC
+ AC_CHECK_HEADERS(asm/types.h conio.h curses.h direct.h dlfcn.h errno.h \
+-fcntl.h grp.h \
++fcntl.h grp.h alloca.h \
+ ieeefp.h io.h langinfo.h libintl.h ncurses.h poll.h process.h pthread.h \
+ shadow.h signal.h stdint.h stropts.h termios.h thread.h \
+ unistd.h utime.h \
+diff -r 5c175f13e3d6 -r de666713ccfa setup.py
+--- a/setup.py	Fri May 11 08:48:51 2012 +0200
++++ b/setup.py	Fri May 11 08:48:52 2012 +0200
+@@ -1311,6 +1311,14 @@
+             macros = dict()
+             libraries = []
+ 
++        elif platform.startswith('irix'):
++            macros = dict(                  # IRIX
++                HAVE_SEM_OPEN=1,
++                HAVE_SEM_TIMEDWAIT=0,
++                HAVE_FD_TRANSFER=1,
++                )
++            libraries = []
++
+         else:                                   # Linux and other unices
+             macros = dict()
+             libraries = ['rt']

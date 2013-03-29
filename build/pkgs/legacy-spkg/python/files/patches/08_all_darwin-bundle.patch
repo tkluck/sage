@@ -1,0 +1,65 @@
+# HG changeset patch
+# User Fabian Groffen <grobian@gentoo.org>
+# Date 1336718930 -7200
+# Branch 2.7
+# Node ID c02b18bd0aa57bedec2ed02de80b311d212c4573
+# Parent  08934052d3658f3a789cb8053ea50c2946a06391
+Makes OSX/Darwin/NeXT use .bundle as extension for dynamic loadable
+modules, as .so is an ugly thing on Darwin
+
+diff -r 08934052d365 -r c02b18bd0aa5 Python/dynload_next.c
+--- a/Python/dynload_next.c	Fri May 11 08:48:50 2012 +0200
++++ b/Python/dynload_next.c	Fri May 11 08:48:50 2012 +0200
+@@ -9,8 +9,8 @@
+ #include <mach-o/dyld.h>
+ 
+ const struct filedescr _PyImport_DynLoadFiletab[] = {
+-    {".so", "rb", C_EXTENSION},
+-    {"module.so", "rb", C_EXTENSION},
++    {".bundle", "rb", C_EXTENSION},
++    {"module.bundle", "rb", C_EXTENSION},
+     {0, 0}
+ };
+ 
+diff -r 08934052d365 -r c02b18bd0aa5 Python/dynload_shlib.c
+--- a/Python/dynload_shlib.c	Fri May 11 08:48:50 2012 +0200
++++ b/Python/dynload_shlib.c	Fri May 11 08:48:50 2012 +0200
+@@ -46,11 +46,16 @@
+     {"module.exe", "rb", C_EXTENSION},
+     {"MODULE.EXE", "rb", C_EXTENSION},
+ #else
++#ifdef __MACH__
++    {".bundle", "rb", C_EXTENSION},
++    {"module.bundle", "rb", C_EXTENSION},
++#else
+     {".so", "rb", C_EXTENSION},
+     {"module.so", "rb", C_EXTENSION},
+ #endif
+ #endif
+ #endif
++#endif
+     {0, 0}
+ };
+ 
+diff -r 08934052d365 -r c02b18bd0aa5 configure
+--- a/configure	Fri May 11 08:48:50 2012 +0200
++++ b/configure	Fri May 11 08:48:50 2012 +0200
+@@ -7568,6 +7568,7 @@
+ 		esac
+ 		;;
+ 	CYGWIN*)   SO=.dll;;
++	Darwin*)   SO=.bundle;;
+ 	*)	   SO=.so;;
+ 	esac
+ else
+diff -r 08934052d365 -r c02b18bd0aa5 configure.in
+--- a/configure.in	Fri May 11 08:48:50 2012 +0200
++++ b/configure.in	Fri May 11 08:48:50 2012 +0200
+@@ -1760,6 +1760,7 @@
+ 		esac
+ 		;;
+ 	CYGWIN*)   SO=.dll;;
++	Darwin*)   SO=.bundle;;
+ 	*)	   SO=.so;;
+ 	esac
+ else

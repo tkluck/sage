@@ -1,0 +1,34 @@
+# HG changeset patch
+# User Fabian Groffen <grobian@gentoo.org>
+# Date 1336718930 -7200
+# Branch 2.7
+# Node ID 43b98d7bde680cf31876d1fbb80b26224b49660e
+# Parent  96b57139d0526e958a11391a4e679f7d6c858f57
+64-bits Solaris 8-10 have a missing libcrypt symlink
+
+http://bugs.python.org/issue1471934
+
+diff -r 96b57139d052 -r 43b98d7bde68 setup.py
+--- a/setup.py	Fri May 11 08:48:49 2012 +0200
++++ b/setup.py	Fri May 11 08:48:50 2012 +0200
+@@ -645,11 +645,17 @@
+             missing.append('readline')
+ 
+         # crypt module.
++        libs = []
+ 
+-        if self.compiler.find_library_file(lib_dirs, 'crypt'):
++        if platform in ['sunos5']:
++            # http://bugs.python.org/issue1471934 (64-bits Solaris 8-10)
++            # if normal libcrypt symlink is available, in theory the
++            # general check below could overwrite this hack, however,
++            # python just looks only at the 32-bits libs here :(
++            if self.compiler.find_library_file(lib_dirs, 'crypt_i'):
++                libs = ['crypt_i']
++        elif self.compiler.find_library_file(lib_dirs, 'crypt'):
+             libs = ['crypt']
+-        else:
+-            libs = []
+         exts.append( Extension('crypt', ['cryptmodule.c'], libraries=libs) )
+ 
+         # CSV files

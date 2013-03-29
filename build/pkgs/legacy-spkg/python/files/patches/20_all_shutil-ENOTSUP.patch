@@ -1,0 +1,85 @@
+# HG changeset patch
+# User Ned Deily <nad@acm.org>
+# Date 1336697149 25200
+# Branch 2.7
+# Node ID ed7d713688012509b35a2d559cbb316191e93146
+# Parent  d71c265f518345c30b83e87a49545147c9375979
+Issue #14662: Prevent shutil failures on OS X when destination does not
+support chflag operations.  (Patch by Hynek Schlawack)
+
+diff -r d71c265f5183 -r ed7d71368801 Lib/shutil.py
+--- a/Lib/shutil.py	Fri May 11 08:48:53 2012 +0200
++++ b/Lib/shutil.py	Thu May 10 17:45:49 2012 -0700
+@@ -102,8 +102,10 @@
+         try:
+             os.chflags(dst, st.st_flags)
+         except OSError, why:
+-            if (not hasattr(errno, 'EOPNOTSUPP') or
+-                why.errno != errno.EOPNOTSUPP):
++            for err in 'EOPNOTSUPP', 'ENOTSUP':
++                if hasattr(errno, err) and why.errno == getattr(errno, err):
++                    break
++            else:
+                 raise
+ 
+ def copy(src, dst):
+diff -r d71c265f5183 -r ed7d71368801 Lib/test/test_shutil.py
+--- a/Lib/test/test_shutil.py	Fri May 11 08:48:53 2012 +0200
++++ b/Lib/test/test_shutil.py	Thu May 10 17:45:49 2012 -0700
+@@ -7,6 +7,7 @@
+ import stat
+ import os
+ import os.path
++import errno
+ from os.path import splitdrive
+ from distutils.spawn import find_executable, spawn
+ from shutil import (_make_tarball, _make_zipfile, make_archive,
+@@ -339,6 +340,35 @@
+                 shutil.rmtree(TESTFN, ignore_errors=True)
+                 shutil.rmtree(TESTFN2, ignore_errors=True)
+ 
++    @unittest.skipUnless(hasattr(os, 'chflags') and
++                         hasattr(errno, 'EOPNOTSUPP') and
++                         hasattr(errno, 'ENOTSUP'),
++                         "requires os.chflags, EOPNOTSUPP & ENOTSUP")
++    def test_copystat_handles_harmless_chflags_errors(self):
++        tmpdir = self.mkdtemp()
++        file1 = os.path.join(tmpdir, 'file1')
++        file2 = os.path.join(tmpdir, 'file2')
++        self.write_file(file1, 'xxx')
++        self.write_file(file2, 'xxx')
++
++        def make_chflags_raiser(err):
++            ex = OSError()
++
++            def _chflags_raiser(path, flags):
++                ex.errno = err
++                raise ex
++            return _chflags_raiser
++        old_chflags = os.chflags
++        try:
++            for err in errno.EOPNOTSUPP, errno.ENOTSUP:
++                os.chflags = make_chflags_raiser(err)
++                shutil.copystat(file1, file2)
++            # assert others errors break it
++            os.chflags = make_chflags_raiser(errno.EOPNOTSUPP + errno.ENOTSUP)
++            self.assertRaises(OSError, shutil.copystat, file1, file2)
++        finally:
++            os.chflags = old_chflags
++
+     @unittest.skipUnless(zlib, "requires zlib")
+     def test_make_tarball(self):
+         # creating something to tar
+diff -r d71c265f5183 -r ed7d71368801 Modules/errnomodule.c
+--- a/Modules/errnomodule.c	Fri May 11 08:48:53 2012 +0200
++++ b/Modules/errnomodule.c	Thu May 10 17:45:49 2012 -0700
+@@ -783,6 +783,9 @@
+ #ifdef WSAN
+     inscode(d, ds, de, "WSAN", WSAN, "Error WSAN");
+ #endif
++#ifdef ENOTSUP
++    inscode(d, ds, de, "ENOTSUP", ENOTSUP, "Operation not supported");
++#endif
+ 
+     Py_DECREF(de);
+ }

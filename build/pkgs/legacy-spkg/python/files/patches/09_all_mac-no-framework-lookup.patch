@@ -1,0 +1,24 @@
+# HG changeset patch
+# User Fabian Groffen <grobian@gentoo.org>
+# Date 1336718930 -7200
+# Branch 2.7
+# Node ID 765f0a2861297e707da6a50687d590eef2ea1f2a
+# Parent  c02b18bd0aa57bedec2ed02de80b311d212c4573
+We do not want framework lookups, because that influences the searchpath
+and things like sys.prefix.  On a non-framework install this differs
+almost nothing, but avoids weird behaviour if a framework suddenly
+somehow becomes available.  On a framework install this makes python
+behave like a normal UNIX install.
+
+diff -r c02b18bd0aa5 -r 765f0a286129 Modules/getpath.c
+--- a/Modules/getpath.c	Fri May 11 08:48:50 2012 +0200
++++ b/Modules/getpath.c	Fri May 11 08:48:50 2012 +0200
+@@ -450,7 +450,7 @@
+         strncpy(argv0_path, progpath, MAXPATHLEN);
+         argv0_path[MAXPATHLEN] = '\0';
+ 
+-#ifdef WITH_NEXT_FRAMEWORK
++#if 0
+         /* On Mac OS X we have a special case if we're running from a framework.
+         ** This is because the python home should be set relative to the library,
+         ** which is in the framework, not relative to the executable, which may

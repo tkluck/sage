@@ -1,0 +1,25 @@
+# HG changeset patch
+# User Fabian Groffen <grobian@gentoo.org>
+# Date 1336718931 -7200
+# Branch 2.7
+# Node ID fb3bfe2d7ca871982516b122303f192e7920e41b
+# Parent  62bcd04d282b01e18bc985747501bb2648b44bd7
+We always need the Prefix search path, because we got our deps straight.
+
+diff -r 62bcd04d282b -r fb3bfe2d7ca8 setup.py
+--- a/setup.py	Fri May 11 08:48:51 2012 +0200
++++ b/setup.py	Fri May 11 08:48:51 2012 +0200
+@@ -420,12 +420,7 @@
+                     for directory in reversed(options.dirs):
+                         add_dir_to_list(dir_list, directory)
+ 
+-        if os.path.normpath(sys.prefix) != '/usr' \
+-                and not sysconfig.get_config_var('PYTHONFRAMEWORK'):
+-            # OSX note: Don't add LIBDIR and INCLUDEDIR to building a framework
+-            # (PYTHONFRAMEWORK is set) to avoid # linking problems when
+-            # building a framework with different architectures than
+-            # the one that is currently installed (issue #7473)
++        if os.path.normpath(sys.prefix) != '/usr':
+             add_dir_to_list(self.compiler.library_dirs,
+                             sys.prefix + "/@@GENTOO_LIBDIR@@")
+             add_dir_to_list(self.compiler.include_dirs,

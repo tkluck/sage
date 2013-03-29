@@ -18,16 +18,15 @@ SAGE_VERSION_SUFFIX=-`${SAGE_ROOT}/build/portage/checked_out_version`
 
 all: sage sage-starts
 
-portage_conf: local/etc/portage/make.profile \
+PORTAGE_CONF=local/etc/portage/make.profile \
               local/etc/make.conf \
               local/etc/portage/categories \
               local/usr \
-              senv
+              local/bin/senv
 
 bootstrap: local/bin/emerge \
-           senv \
+           local/bin/senv 
 
-senv: local/bin/senv
 local/bin/senv: build/portage/senv.in
 	# we substitute ${CONFIGURE_EPREFIX} manually.
 	# TODO: this only works if the path does not contains the + character!!!
@@ -40,8 +39,13 @@ local/bin/senv: build/portage/senv.in
 
 bootstrap_python: .bootstrap_python.stamp
 .bootstrap_python.stamp: local/usr
+	mkdir -p local/bin
 	if PATH=local/bin:$$PATH python --version 2>&1 | grep 2.7 > /dev/null; then \
-            true; \
+            if python --version 2>&1 | grep 2.7 > /dev/null; then \
+                (cd local/bin && ln -sf `command -v python`) \
+            else \
+                true; \
+            fi; \
         else \
             build/portage/bootstrap_prefix.sh ${SAGE_LOCAL} python ; \
         fi
@@ -149,14 +153,14 @@ build/portage/src/configure:
 # it's managing. It writes some of its config files to the one during install, and then
 # tries to find them at the other during use.
 local/bin/emerge: build/portage/src/configure .bootstrap_python.stamp .bootstrap_wget.stamp .bootstrap_findutils.stamp .bootstrap_coreutils.stamp .bootstrap_sed.stamp \
-                             .bootstrap_grep.stamp .bootstrap_make.stamp portage_conf
+                             .bootstrap_grep.stamp .bootstrap_make.stamp ${PORTAGE_CONF}
 	(cd ${PORTAGE_DIR}/src && PATH=${SAGE_LOCAL}/bin:$$PATH ./configure --prefix=${SAGE_ROOT}/local --with-offset-prefix=${SAGE_LOCAL} --with-portage-user=`id -un` --with-portage-group=`id -gn` --with-extra-path=/usr/local/bin:/usr/bin:/bin )
 	# install fails when it can't make certain symbolic links, so let's delete them if they exist
 	rm -f ${SAGE_LOCAL}/etc/make.globals
 	(cd ${PORTAGE_DIR}/src && PATH=${SAGE_LOCAL}/bin:$$PATH make install)
-	local/bin/sed -i 's/_enable_ipc_daemon = True/_enable_ipc_daemon = False/g' ${SAGE_LOCAL}/lib/portage/pym/_emerge/AbstractEbuildProcess.py
+	PATH=${SAGE_LOCAL}/bin:$$PATH sed -i 's/_enable_ipc_daemon = True/_enable_ipc_daemon = False/g' ${SAGE_LOCAL}/lib/portage/pym/_emerge/AbstractEbuildProcess.py
 	if COLLISION_IGNORE='**' ${SAGE_ROOT}/local/bin/emerge --oneshot legacy-spkg/portage; then \
-	   local/bin/sed -i 's/_enable_ipc_daemon = True/_enable_ipc_daemon = False/g' ${SAGE_LOCAL}/lib/portage/pym/_emerge/AbstractEbuildProcess.py \
+	   PATH=${SAGE_LOCAL}/bin:$$PATH sed -i 's/_enable_ipc_daemon = True/_enable_ipc_daemon = False/g' ${SAGE_LOCAL}/lib/portage/pym/_emerge/AbstractEbuildProcess.py ; \
            true; \
         else \
            rm local/bin/emerge; \
@@ -236,4 +240,4 @@ clean:
 
 .PHONY: sage bootstrap all sage-doc sage_package_dependencies \
 libcsage local_packages sage-starts gcc bootstrap_coreutils \
-bootstrap_findutils bootstrap_wget
+bootstrap_findutils bootstrap_wget portage_conf

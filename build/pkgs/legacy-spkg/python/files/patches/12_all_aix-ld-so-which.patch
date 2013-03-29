@@ -1,0 +1,38 @@
+# HG changeset patch
+# User Michael Haubenwallner <haubi@gentoo.org>
+# Date 1336718931 -7200
+# Branch 2.7
+# Node ID 4d4d6388c3a6590d4061d7bc4e1256099104e31e
+# Parent  fb3bfe2d7ca871982516b122303f192e7920e41b
+do not use 'which' to find binaries, but go through the PATH.
+http://bugs.python.org/issue7742
+
+diff -r fb3bfe2d7ca8 -r 4d4d6388c3a6 Modules/ld_so_aix.in
+--- a/Modules/ld_so_aix.in	Fri May 11 08:48:51 2012 +0200
++++ b/Modules/ld_so_aix.in	Fri May 11 08:48:51 2012 +0200
+@@ -73,7 +73,24 @@
+ 
+ # Check for existence of compiler.
+ CC=$1; shift
+-whichcc=`which $CC`
++
++pywhich() {
++	save_IFS=${IFS}
++	IFS=:
++	for p in ${PATH}
++	do
++		if test -x "${p}/$1"
++		then
++			echo "${p}/$1"
++			IFS=${save_IFS}
++			return 0
++		fi
++	done
++	IFS=${save_IFS}
++	return 1
++}
++
++whichcc=`pywhich $CC`
+ 
+ if test ! -x "$whichcc"; then
+   echo "ld_so_aix: Compiler '$CC' not found; exiting."
