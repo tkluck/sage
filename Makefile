@@ -8,7 +8,6 @@ PORTAGE_DIR=build/portage
 #  2. install Portage Prefix into $SAGE_LOCAL (this is the bootstrap target)
 #  3. emerge gcc (when necessary)
 #  4. if gcc was emerged, re-emerge its dependencies using the new gcc
-#  5. download upstream sources (this is the local_packages target)
 #  6. install the dependency tree by emerging legacy-spkg/sage-full
 #  7. perform sage -docbuild all html (this is the sage-doc target)
 #  8. perform all doctests (this is the check target)
@@ -192,24 +191,24 @@ local/usr:
 	mkdir -p ${SAGE_LOCAL}
 	(cd ${SAGE_LOCAL} && ln -sf . usr)
 
-gcc: .rebuilt_gccs_dependencies.stamp
-.rebuilt_gccs_dependencies.stamp: ${BOOTSTRAP}
-	if PATH=local/bin:$$PATH gcc --version | grep 4.6 > /dev/null; then \
+.rebuilt_gccs_dependencies.stamp:
+	if gcc --version | grep 4.6 > /dev/null; then \
             true; \
         else \
-            if PATH=local/bin:$$PATH gcc --version | grep 4.7 > /dev/null; then \
+            if gcc --version | grep 4.7 > /dev/null; then \
                 true; \
             else \
-                ${SAGE_LOCAL}/bin/emerge --noreplace --oneshot legacy-spkg/gcc; \
+                true This uses --noreplace so that we dont do this in case we resume a previous build; \
+                ${SAGE_LOCAL}/bin/emerge --noreplace --oneshot --noreplace legacy-spkg/gcc; \
+                ${SAGE_LOCAL}/bin/emerge --oneshot legacy-spkg/mpir legacy-spkg/mpfr legacy-spkg/mpc legacy-spkg/zlib legacy-spkg/gcc; \
             fi; \
         fi
-	${SAGE_LOCAL}/bin/emerge --oneshot legacy-spkg/mpir legacy-spkg/mpfr legacy-spkg/mpc legacy-spkg/zlib legacy-spkg/gcc;
-	touch .rebuilt_gccs_dependencies.stamp
+	touch .rebuilt_gccs_dependencies.stamp 
 	
 # We use the --oneshot option to make sure emerge does not hold on to this package
 # in case of a downgrade (which would make the downgrade fail)
 sage: local/bin/emerge .rebuilt_gccs_dependencies.stamp
-	${SAGE_LOCAL}/bin/emerge --noreplace --oneshot --deep --update --keep-going --jobs 4 ${SAGE_VERSION_PREFIX}legacy-spkg/sage-full${SAGE_VERSION_SUFFIX}
+	${SAGE_LOCAL}/bin/emerge --noreplace --oneshot --deep --update --keep-going ${SAGE_VERSION_PREFIX}legacy-spkg/sage-full${SAGE_VERSION_SUFFIX}
 
 # the sage-docs are necessary for some of the doctests
 # it is, however, extremely memory-intensive to build them
@@ -222,13 +221,6 @@ sage-starts: local/etc/sage-started.txt
 local/etc/sage-started.txt: sage
 	${SAGE_LOCAL}/bin/sage-starts
 
-# We do all downloads before emerging
-local_packages: .local_packages.stamp
-.local_packages.stamp: bootstrap
-	${SAGE_LOCAL}/bin/emerge --oneshot --fetchonly ${SAGE_VERSION_PREFIX}legacy-spkg/sage-full${SAGE_VERSION_SUFFIX}
-	touch .local_packages.stamp
-
-
 # a check target that runs the doctests
 check: sage sage-starts
 	${SAGE_ROOT}/sage -t src/sage
@@ -239,5 +231,5 @@ clean:
 	rm -rf build/artifacts
 
 .PHONY: sage bootstrap all sage-doc sage_package_dependencies \
-libcsage local_packages sage-starts gcc bootstrap_coreutils \
+libcsage sage-starts gcc bootstrap_coreutils \
 bootstrap_findutils bootstrap_wget portage_conf

@@ -5,7 +5,7 @@ You can use the following commands to install sage from this git repository:
     git submodule update --init
     make
 
-if you're on linux-amd64. If not, then use the following:
+if you're on linux-amd64. In theory, you have to make some changes for other platforms:
 
     git submodule update --init
     make bootstrap
@@ -17,6 +17,15 @@ for your host. Then continue:
 
 and done!
 
+Parallel building
+=================
+If you want to build several packages simultaneously, you will probably want to use
+
+    make bootstrap
+    local/bin/emerge --jobs <N> legacy-spkg/sage-full
+
+instead.
+
 Prerequisites
 =============
 You need at least the following things on your system for this to work:
@@ -24,18 +33,25 @@ You need at least the following things on your system for this to work:
  * autotools
  * git
 
+If you don't have autotools, you can checkout the portage-prefix-autotooled branch:
+
+    git checkout portage-prefix-autotooled
+    git submodule sync
+    git submodule update --init
+    make
+
 Description of the bootstrapping process
 ========================================
 The following packages each depend on the former:
 
+ * system cc
  * python2.7, GNU coreutils, GNU findutils
  * portage prefix
- * system cc
  * mpir, mpfr, mpc
  * (gcc)
  * all the rest
 
-The first two bullets are bootstrapped by the Makefile if they are not on the
+The second bullet point is bootstrapped by the Makefile if they are not on the
 system. This uses a very basic parser of the ebuilds.
 
 If the system cc is not gcc, or if it is not at least version 4.6, then we want
