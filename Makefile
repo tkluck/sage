@@ -182,6 +182,7 @@ local/etc/make.conf: build/portage/make.conf.in
 # this is a workaround: some parts of portage seem to expect ${EPREFIX} as the prefix,
 # others expect ${EPREFIX}/usr. I just copied this workaround from lmonade
 local/usr:
+	mkdir -p ${SAGE_LOCAL}
 	(cd ${SAGE_LOCAL} && ln -sf . usr)
 
 gcc: bootstrap .rebuilt_gccs_dependencies.stamp
