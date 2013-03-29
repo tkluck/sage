@@ -154,7 +154,7 @@ build/portage/src/configure:
 # tries to find them at the other during use.
 local/bin/emerge: build/portage/src/configure .bootstrap_python.stamp .bootstrap_wget.stamp .bootstrap_findutils.stamp .bootstrap_coreutils.stamp .bootstrap_sed.stamp \
                              .bootstrap_grep.stamp .bootstrap_make.stamp portage_conf
-	(cd ${PORTAGE_DIR}/src && ./configure --prefix=${SAGE_ROOT}/local --with-offset-prefix=${SAGE_LOCAL} --with-portage-user=`id -un` --with-portage-group=`id -gn` --with-extra-path=/usr/local/bin:/usr/bin:/bin )
+	(cd ${PORTAGE_DIR}/src && PATH=${SAGE_LOCAL}/bin:$$PATH ./configure --prefix=${SAGE_ROOT}/local --with-offset-prefix=${SAGE_LOCAL} --with-portage-user=`id -un` --with-portage-group=`id -gn` --with-extra-path=/usr/local/bin:/usr/bin:/bin )
 	# install fails when it can't make certain symbolic links, so let's delete them if they exist
 	rm -f ${SAGE_LOCAL}/etc/make.globals
 	(cd ${PORTAGE_DIR}/src && make && make install)
