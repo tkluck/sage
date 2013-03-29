@@ -13,7 +13,7 @@ legacy-spkg/libpng"
 RDEPEND="${DEPEND}"
 S="${WORKDIR}"
 src_prepare() {
-        mv python-2.7.3 src
+        mv Python-2.7.3 src
         cp -r "${FILESDIR}"/* . || die
 }
 src_configure() {
