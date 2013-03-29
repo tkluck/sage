@@ -22,11 +22,12 @@ PACKAGENAME=`basename "$1"`
 
 rm -rf "build/artifacts/$PACKAGENAME"
 mkdir -p "build/artifacts/$PACKAGENAME"
+mkdir -p build/artifacts/local_bootstrap
 cd "build/artifacts/$PACKAGENAME" || exit 1
 cp "../../../upstream/$TARBALLNAME" .
 tar -xf "$TARBALLNAME"
 rm "$TARBALLNAME"
 mv * src
 cp -r "$EBUILDDIR"/files/* .
-SAGE_ROOT=../../.. ../../../sage -sh -c ./spkg-install
+SAGE_ROOT=../../.. ../../../sage -sh -c "SAGE_LOCAL=`cd ../local_bootstrap && pwd` ./spkg-install"
 

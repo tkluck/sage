@@ -18,11 +18,22 @@ SAGE_VERSION_SUFFIX=-`${SAGE_ROOT}/build/portage/checked_out_version`
 
 all: sage sage-starts
 
-bootstrap: build/artifacts/local_bootstrap/bin/emerge \
-           local/etc/portage/make.profile \
-           local/etc/make.conf \
-           local/etc/portage/categories \
-           local/usr
+portage_conf: local/etc/portage/make.profile \
+              local/etc/make.conf \
+              local/etc/portage/categories \
+              local/usr \
+              senv
+
+bootstrap: local/bin/emerge \
+           senv \
+
+senv: local/bin/senv
+local/bin/senv:
+	mkdir -p local/bin
+	cp build/portage/senv local/bin
+	# portage prefix checks shebangs for common interpreters and makes them point into the
+	# prefix, so they shoule be there
+	cd local/bin && ln -s `command -v bash` && ln -s `command -v sh` && ln -s `command -v perl`
 
 bootstrap_python: .bootstrap_python.stamp
 .bootstrap_python.stamp:
@@ -135,17 +146,24 @@ bootstrap_make: .bootstrap_make.stamp
 	touch .bootstrap_make.stamp
 
 build/portage/src/configure:
-	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c ./autogen.sh) 
+	(cd ${PORTAGE_DIR}/src && ./autogen.sh) 
 
-build/artifacts/local_bootstrap/bin/emerge: build/portage/src/configure .bootstrap_python.stamp .bootstrap_wget.stamp .bootstrap_findutils.stamp .bootstrap_coreutils.stamp .bootstrap_sed.stamp \
-                             .bootstrap_grep.stamp .bootstrap_make.stamp
-	mkdir -p ${SAGE_ROOT}/build/artifacts/local_bootstrap
-	mkdir -p ${SAGE_LOCAL}/etc
-	(cd ${SAGE_ROOT}/build/artifacts/local_bootstrap && rm -rf etc && ln -sf ../../../local/etc)
-	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c './configure --prefix=${SAGE_ROOT}/build/artifacts/local_bootstrap --with-offset-prefix=${SAGE_LOCAL} --with-portage-user=`id -un` --with-portage-group=`id -gn` --with-extra-path=/usr/local/bin:/usr/bin:/bin' )
+# it would be better to first boostrap portage into build/artifacts/local_bootstrap, but
+# it is not smart enough to be able to distinguish between its own prefix and the prefix
+# it's managing. It writes some of its config files to the one during install, and then
+# tries to find them at the other during use.
+local/bin/emerge: build/portage/src/configure .bootstrap_python.stamp .bootstrap_wget.stamp .bootstrap_findutils.stamp .bootstrap_coreutils.stamp .bootstrap_sed.stamp \
+                             .bootstrap_grep.stamp .bootstrap_make.stamp portage_conf
+	(cd ${PORTAGE_DIR}/src && ./configure --prefix=${SAGE_ROOT}/local --with-offset-prefix=${SAGE_LOCAL} --with-portage-user=`id -un` --with-portage-group=`id -gn` --with-extra-path=/usr/local/bin:/usr/bin:/bin )
 	# install fails when it can't make certain symbolic links, so let's delete them if they exist
-	rm -f ${SAGE_ROOT}/build/artifacts/local_bootstrap/etc/make.globals
-	(cd ${PORTAGE_DIR}/src && ${SAGE_ROOT}/sage -bash -c make && ${SAGE_ROOT}/sage -bash -c 'make install')
+	rm -f ${SAGE_LOCAL}/etc/make.globals
+	(cd ${PORTAGE_DIR}/src && make && make install)
+	if COLLISION_IGNORE='**' ${SAGE_ROOT}/local/bin/emerge --oneshot legacy-spkg/portage; then \
+           true; \
+        else \
+           rm local/bin/emerge; \
+           false; \
+        fi
 
 # the make.profile configuration directory contains compiler flags etc that are optimized
 # for the host's specific architecture.
@@ -172,22 +190,23 @@ local/usr:
 
 gcc: bootstrap .rebuilt_gccs_dependencies.stamp
 .rebuilt_gccs_dependencies.stamp:
-	if ! ${SAGE_ROOT}/sage -bash -c 'gcc --version' | grep -q 4.6; then \
-            if ! ${SAGE_ROOT}/sage -bash -c 'gcc --version' | grep -q 4.7; then \
-                ${SAGE_ROOT}/sage -bash -c '${SAGE_ROOT}/build/artifacts/local_bootstrap/bin/emerge --noreplace --oneshot legacy-spkg/gcc'; \
+	if PATH=local/bin:$$PATH gcc --version | grep 4.6 > /dev/null; then \
+            true; \
+        else \
+            if PATH=local/bin:$$PATH gcc --version | grep 4.7 > /dev/null; then \
+                true; \
+            else \
+                ${SAGE_ROOT}/build/artifacts/local_bootstrap/bin/emerge --noreplace --oneshot legacy-spkg/gcc; \
             fi; \
         fi
 	# TODO: find a way to make sure this happens!!
 	#fi${SAGE_ROOT}/sage -bash -c '${SAGE_ROOT}/build/artifacts/local_bootstrap/bin/emerge --oneshot legacy-spkg/mpir legacy-spkg/mpfr legacy-spkg/mpc legacy-spkg/zlib';
 	touch .rebuilt_gccs_dependencies.stamp
-
-local/bin/emerge: bootstrap
-	${SAGE_ROOT}/sage -bash -c '${SAGE_ROOT}/build/artifacts/local_bootstrap/bin/emerge --oneshot legacy-spkg/portage';
 	
 # We use the --oneshot option to make sure emerge does not hold on to this package
 # in case of a downgrade (which would make the downgrade fail)
 sage: local/bin/emerge gcc
-	${SAGE_ROOT}/sage -bash -c '${SAGE_LOCAL}/bin/emerge --noreplace --oneshot --deep --update --keep-going --jobs 4 ${SAGE_VERSION_PREFIX}legacy-spkg/sage-full${SAGE_VERSION_SUFFIX}'
+	${SAGE_LOCAL}/bin/emerge --noreplace --oneshot --deep --update --keep-going --jobs 4 ${SAGE_VERSION_PREFIX}legacy-spkg/sage-full${SAGE_VERSION_SUFFIX}
 
 # the sage-docs are necessary for some of the doctests
 # it is, however, extremely memory-intensive to build them
@@ -203,7 +222,7 @@ local/etc/sage-started.txt: sage
 # We do all downloads before emerging
 local_packages: .local_packages.stamp
 .local_packages.stamp: bootstrap
-	${SAGE_ROOT}/sage -bash -c '${SAGE_LOCAL}/bin/emerge --oneshot --fetchonly ${SAGE_VERSION_PREFIX}legacy-spkg/sage-full${SAGE_VERSION_SUFFIX}'
+	${SAGE_LOCAL}/bin/emerge --oneshot --fetchonly ${SAGE_VERSION_PREFIX}legacy-spkg/sage-full${SAGE_VERSION_SUFFIX}
 	touch .local_packages.stamp
 
 

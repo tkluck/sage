@@ -22,6 +22,6 @@ src_compile() {
         return 0
 }
 src_install() {
-        SAGE_LOCAL="${EPREFIX}" ./spkg-install || die
+        ${SAGE_ROOT}/sage -sh -c ./spkg-install || die
 }
 
