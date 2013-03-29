@@ -28,10 +28,10 @@ BOOTSTRAP=local/bin/emerge \
           local/bin/senv 
 bootstrap: ${BOOTSTRAP}
 local/bin/senv: build/portage/senv.in
-	# we substitute ${CONFIGURE_EPREFIX} manually.
-	# TODO: this only works if the path does not contains the + character!!!
+	# we substitute @CONFIGURE_EPREFIX@ manually.
+	# TODO: this only works if the path does not contains the , character!!!
 	mkdir -p local/bin
-	cat ${PORTAGE_DIR}/senv.in | sed 's+@CONFIGURE_EPREFIX@'+${SAGE_LOCAL}+g > local/bin/senv
+	cat ${PORTAGE_DIR}/senv.in | sed 's,@CONFIGURE_EPREFIX@',${SAGE_LOCAL},g > local/bin/senv
 	chmod a+x local/bin/senv
 	# portage prefix checks shebangs for common interpreters and makes them point into the
 	# prefix, so they shoule be there
@@ -158,6 +158,7 @@ local/bin/emerge: build/portage/src/configure .bootstrap_python.stamp .bootstrap
 	# install fails when it can't make certain symbolic links, so let's delete them if they exist
 	rm -f ${SAGE_LOCAL}/etc/make.globals
 	(cd ${PORTAGE_DIR}/src && PATH=${SAGE_LOCAL}/bin:$$PATH make install)
+	# sed -i is a GNU-sed specific option, so we need the one in our path
 	PATH=${SAGE_LOCAL}/bin:$$PATH sed -i 's/_enable_ipc_daemon = True/_enable_ipc_daemon = False/g' ${SAGE_LOCAL}/lib/portage/pym/_emerge/AbstractEbuildProcess.py
 	if COLLISION_IGNORE='**' ${SAGE_ROOT}/local/bin/emerge --oneshot legacy-spkg/portage; then \
 	   PATH=${SAGE_LOCAL}/bin:$$PATH sed -i 's/_enable_ipc_daemon = True/_enable_ipc_daemon = False/g' ${SAGE_LOCAL}/lib/portage/pym/_emerge/AbstractEbuildProcess.py ; \
@@ -191,8 +192,8 @@ local/usr:
 	mkdir -p ${SAGE_LOCAL}
 	(cd ${SAGE_LOCAL} && ln -sf . usr)
 
-gcc: ${BOOTSTRAP} .rebuilt_gccs_dependencies.stamp
-.rebuilt_gccs_dependencies.stamp:
+gcc: .rebuilt_gccs_dependencies.stamp
+.rebuilt_gccs_dependencies.stamp: ${BOOTSTRAP}
 	if PATH=local/bin:$$PATH gcc --version | grep 4.6 > /dev/null; then \
             true; \
         else \
@@ -208,7 +209,7 @@ gcc: ${BOOTSTRAP} .rebuilt_gccs_dependencies.stamp
 	
 # We use the --oneshot option to make sure emerge does not hold on to this package
 # in case of a downgrade (which would make the downgrade fail)
-sage: local/bin/emerge gcc
+sage: local/bin/emerge .rebuilt_gccs_dependencies.stamp
 	${SAGE_LOCAL}/bin/emerge --noreplace --oneshot --deep --update --keep-going --jobs 4 ${SAGE_VERSION_PREFIX}legacy-spkg/sage-full${SAGE_VERSION_SUFFIX}
 
 # the sage-docs are necessary for some of the doctests
