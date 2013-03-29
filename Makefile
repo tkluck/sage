@@ -203,8 +203,9 @@ gcc: .rebuilt_gccs_dependencies.stamp
                 ${SAGE_LOCAL}/bin/emerge --noreplace --oneshot legacy-spkg/gcc; \
             fi; \
         fi
-	# TODO: find a way to make sure this happens!!
-	#fi${SAGE_ROOT}/sage -bash -c '${SAGE_ROOT}/build/artifacts/local_bootstrap/bin/emerge --oneshot legacy-spkg/mpir legacy-spkg/mpfr legacy-spkg/mpc legacy-spkg/zlib';
+	# TODO: find a way to make sure this happens, even if we get interrupted at this point
+	# and then call make again
+	${SAGE_LOCAL}/bin/emerge --oneshot legacy-spkg/mpir legacy-spkg/mpfr legacy-spkg/mpc legacy-spkg/zlib legacy-spkg/gcc;
 	touch .rebuilt_gccs_dependencies.stamp
 	
 # We use the --oneshot option to make sure emerge does not hold on to this package
