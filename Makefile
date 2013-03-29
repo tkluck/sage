@@ -28,9 +28,11 @@ bootstrap: local/bin/emerge \
            senv \
 
 senv: local/bin/senv
-local/bin/senv:
+local/bin/senv: build/portage/senv.in
+	# we substitute ${CONFIGURE_EPREFIX} manually.
+	# TODO: this only works if the path does not contains the + character!!!
 	mkdir -p local/bin
-	cp build/portage/senv local/bin
+	cat ${PORTAGE_DIR}/senv.in | sed 's+$${CONFIGURE_EPREFIX}'+${SAGE_LOCAL}+g > local/bin/senv
 	chmod a+x local/bin/senv
 	# portage prefix checks shebangs for common interpreters and makes them point into the
 	# prefix, so they shoule be there
@@ -178,11 +180,11 @@ local/etc/portage/categories: build/portage/categories
 	mkdir -p ${SAGE_LOCAL}/etc/portage 
 	cp ${PORTAGE_DIR}/categories local/etc/portage
 
-local/etc/make.conf: build/portage/make.conf
+local/etc/make.conf: build/portage/make.conf.in
 	# make.conf has no access to variables defined in make.globals. As a workaround, we
 	# substitute ${CONFIGURE_EPREFIX} manually.
 	# TODO: this only works if the path does not contains the + character!!!
-	cat ${PORTAGE_DIR}/make.conf | sed 's+$${CONFIGURE_EPREFIX}'+${SAGE_LOCAL}+g > local/etc/make.conf
+	cat ${PORTAGE_DIR}/make.conf.in | sed 's+$${CONFIGURE_EPREFIX}'+${SAGE_LOCAL}+g > local/etc/make.conf
     
 # this is a workaround: some parts of portage seem to expect ${EPREFIX} as the prefix,
 # others expect ${EPREFIX}/usr. I just copied this workaround from lmonade
