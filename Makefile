@@ -24,9 +24,9 @@ PORTAGE_CONF=local/etc/portage/make.profile \
               local/usr \
               local/bin/senv
 
-bootstrap: local/bin/emerge \
-           local/bin/senv 
-
+BOOTSTRAP=local/bin/emerge \
+          local/bin/senv 
+bootstrap: ${BOOTSTRAP}
 local/bin/senv: build/portage/senv.in
 	# we substitute ${CONFIGURE_EPREFIX} manually.
 	# TODO: this only works if the path does not contains the + character!!!
@@ -191,7 +191,7 @@ local/usr:
 	mkdir -p ${SAGE_LOCAL}
 	(cd ${SAGE_LOCAL} && ln -sf . usr)
 
-gcc: bootstrap .rebuilt_gccs_dependencies.stamp
+gcc: ${BOOTSTRAP} .rebuilt_gccs_dependencies.stamp
 .rebuilt_gccs_dependencies.stamp:
 	if PATH=local/bin:$$PATH gcc --version | grep 4.6 > /dev/null; then \
             true; \
@@ -199,7 +199,7 @@ gcc: bootstrap .rebuilt_gccs_dependencies.stamp
             if PATH=local/bin:$$PATH gcc --version | grep 4.7 > /dev/null; then \
                 true; \
             else \
-                ${SAGE_ROOT}/build/artifacts/local_bootstrap/bin/emerge --noreplace --oneshot legacy-spkg/gcc; \
+                ${SAGE_ROOT}/build/emerge --noreplace --oneshot legacy-spkg/gcc; \
             fi; \
         fi
 	# TODO: find a way to make sure this happens!!
