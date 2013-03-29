@@ -2,7 +2,7 @@
 EAPI=5
 DECRIPTION="python"
 HOMEPAGE=""
-SRC_URI="https://dev.gentoo.org/~grobian/distfiles/python-2.7.3-patched.tar.bz2"
+SRC_URI="http://dev.gentoo.org/~grobian/distfiles/python-2.7.3-patched.tar.bz2"
 LICENSE=""
 SLOT="0"
 KEYWORDS="amd64-linux"
