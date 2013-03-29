@@ -39,13 +39,11 @@ local/bin/senv: build/portage/senv.in
 	cd local/bin && ln -s `command -v bash` && ln -s `command -v sh` && ln -s `command -v perl`
 
 bootstrap_python: .bootstrap_python.stamp
-.bootstrap_python.stamp:
-	mkdir -p local/bin
-	mkdir -p upstream
+.bootstrap_python.stamp: local/usr
 	if PATH=local/bin:$$PATH python --version 2>&1 | grep 2.7 > /dev/null; then \
-            ln -sf `command -v python` local/bin/python; \
+            true; \
         else \
-            build/portage/bootstrap-legacy-spkg build/pkgs/legacy-spkg/python/python-2.7.3_p5.ebuild; \
+            build/portage/bootstrap_prefix.sh ${SAGE-LOCAL} python \
         fi
 	touch .bootstrap_python.stamp
 
