@@ -8,7 +8,7 @@ SLOT="0"
 KEYWORDS="amd64-linux"
 DEPEND="=legacy-spkg/symmetrica-2.0_p7
 =legacy-spkg/rubiks-20070912_p18
-=legacy-spkg/sage-5.9_beta1
+=legacy-spkg/sage-5.9_beta2
 =legacy-spkg/elliptic_curves-0.7
 =legacy-spkg/gd-2.0.35_p7
 =legacy-spkg/networkx-1.6
