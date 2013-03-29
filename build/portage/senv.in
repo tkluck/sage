@@ -1,6 +1,6 @@
 #!/bin/sh
 env -i HOME=$HOME TERM=$TERM USER=$USER \
 http_proxy=$http_proxy ftp_proxy=$ftp_proxy gopher_proxy=$gopher_proxy \
-PATH=${CONFIGURE_EPREFIX}:$PATH \
+PATH=@CONFIGURE_EPREFIX@:$PATH \
 https_proxy=$https_proxy no_proxy="$no_proxy" "$@"
 
