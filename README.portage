@@ -40,6 +40,20 @@ If you don't have autotools, you can checkout the portage-prefix-autotooled bran
     git submodule update --init
     make
 
+If you make sure that the following are in your path, you can save a lot of bootstrapping
+time:
+
+ * install, id, stat, find, xargs, wget, sed, grep, make are their GNU versions 
+ * python 2.7
+ * gcc 4.6 or gcc 4.7
+
+On some BSD systems, the GNU versions are called g$util (i.e. gsed, gid, gmake etc). In that
+case, you can put some symbolic links
+
+    local/bin/sed -> `which gsed`
+
+in $SAGE_ROOT/local/bin and they will be picked up by the bootstrapping script.
+
 Description of the bootstrapping process
 ========================================
 The following packages each depend on the former:
