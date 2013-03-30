@@ -26,6 +26,18 @@ If you want to build several packages simultaneously, you will probably want to 
 
 instead.
 
+If you want to use parallel build for bootstrapping, use the following:
+
+    MAKE="make -jN" make bootstrap       # haven't tested this
+    echo 'MAKE="make -jN"' >> local/etc/make.conf
+    make .rebuilt_gccs_dependencies.stamp
+    make -B local/etc/make.conf
+
+and then just
+
+    local/bin/emerge --jobs <N> legacy-spkg/sage-full
+
+
 Prerequisites
 =============
 You need at least the following things on your system for this to work:
