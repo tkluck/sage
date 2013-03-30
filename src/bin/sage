@@ -955,6 +955,16 @@ if [ "$1" = '-gthread' -o "$1" = '-qthread' -o "$1" = '-q4thread' -o "$1" = '-wt
     interactive_sage "$@"
 fi
 
+if [ "$1" = '-emerge' ]; then
+    shift
+    local/bin/emerge "$@"
+fi
+
+if [ "$1" = '-ebuild' ]; then
+    shift
+    local/bin/ebuild "$@"
+fi
+
 if [ $# -ge 1 ]; then
     T=`echo "$1" | sed -e "s/.*\.//"`
     if [ "$T" = "spkg" ]; then
