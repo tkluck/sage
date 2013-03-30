@@ -6,7 +6,7 @@ SRC_URI=""
 LICENSE=""
 SLOT="0"
 KEYWORDS="amd64-linux"
-DEPEND=""
+DEPEND="legacy-spkg/python"
 RDEPEND="${DEPEND}"
 S="${SAGE_ROOT}/build/portage/src"
 src_configure() {

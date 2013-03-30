@@ -159,7 +159,7 @@ local/bin/emerge: build/portage/src/configure .bootstrap_python.stamp .bootstrap
 	(cd ${PORTAGE_DIR}/src && PATH=${SAGE_LOCAL}/bin:$$PATH make install)
 	# sed -i is a GNU-sed specific option, so we need the one in our path
 	PATH=${SAGE_LOCAL}/bin:$$PATH sed -i 's/_enable_ipc_daemon = True/_enable_ipc_daemon = False/g' ${SAGE_LOCAL}/lib/portage/pym/_emerge/AbstractEbuildProcess.py
-	if COLLISION_IGNORE='**' ${SAGE_ROOT}/local/bin/emerge --oneshot legacy-spkg/portage; then \
+	if COLLISION_IGNORE='**' ${SAGE_ROOT}/sage -sh -c 'emerge --oneshot legacy-spkg/portage'; then \
 	   PATH=${SAGE_LOCAL}/bin:$$PATH sed -i 's/_enable_ipc_daemon = True/_enable_ipc_daemon = False/g' ${SAGE_LOCAL}/lib/portage/pym/_emerge/AbstractEbuildProcess.py ; \
            true; \
         else \
@@ -199,8 +199,8 @@ local/usr:
                 true; \
             else \
                 true This uses --noreplace so that we dont do this in case we resume a previous build; \
-                ${SAGE_LOCAL}/bin/emerge --noreplace --oneshot --noreplace legacy-spkg/gcc; \
-                ${SAGE_LOCAL}/bin/emerge --oneshot legacy-spkg/mpir legacy-spkg/mpfr legacy-spkg/mpc legacy-spkg/zlib legacy-spkg/gcc; \
+                ${SAGE_ROOT}/sage -sh -c 'emerge --noreplace --oneshot --noreplace legacy-spkg/gcc'; \
+                ${SAGE_ROOT}/sage -sh -c 'emerge --oneshot legacy-spkg/mpir legacy-spkg/mpfr legacy-spkg/mpc legacy-spkg/zlib legacy-spkg/gcc'; \
             fi; \
         fi
 	touch .rebuilt_gccs_dependencies.stamp 
@@ -208,7 +208,7 @@ local/usr:
 # We use the --oneshot option to make sure emerge does not hold on to this package
 # in case of a downgrade (which would make the downgrade fail)
 sage: local/bin/emerge .rebuilt_gccs_dependencies.stamp
-	${SAGE_LOCAL}/bin/emerge --noreplace --oneshot --deep --update --keep-going ${SAGE_VERSION_PREFIX}legacy-spkg/sage-full${SAGE_VERSION_SUFFIX}
+	${SAGE_ROOT}/sage -sh -c 'emerge --noreplace --oneshot --deep --update --keep-going ${SAGE_VERSION_PREFIX}legacy-spkg/sage-full${SAGE_VERSION_SUFFIX}'
 
 # the sage-docs are necessary for some of the doctests
 # it is, however, extremely memory-intensive to build them
