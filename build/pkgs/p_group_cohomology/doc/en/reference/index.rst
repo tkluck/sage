@@ -1,4 +1,4 @@
-*p*-Group Cohomology Package
+Mod-*p* Group Cohomology Package
 ============================
 
 This is the documentation for our `Sage <http://www.sagemath.org/>`_ package
