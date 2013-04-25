@@ -114,6 +114,9 @@ SAGE_ROOT/local/share/doc/p_group_cohomology/html/.
 
 == Changelog ==
 
+  * 2.1.4 (Simon King, January 2013):
+    - Replace SAGE_DATA (which was removed from Sage) by SAGE_SHARE
+    - Use os.path rather than explicit (and non-portable) constructions with '/'
   * 2.1.3 (Simon King, July 2012):
     - Improve the heuristic of choosing between Hilbert-Poincare and Symonds
       criteria. If the computation of parameters in small degrees by lifting
