@@ -65,16 +65,16 @@ installed in your copy of Sage. You can install it during a Sage session by
 
     sage: install_package('database_gap')
 
-Then, for installing the latest "official" version of our package (2.1.2), do
+Then, for installing the latest "official" version of our package, do
 ::
 
     sage: install_package('p_group_cohomology')
 
-The latest version (2.1.3) can be installed on the command line
+The latest version (2.1.4) can be installed on the command line
 (hence, *not* in a running Sage session) by
 ::
 
-    sage -i http://sage.math.washington.edu/home/SimonKing/Cohomology/p_group_cohomology-2.1.3.spkg
+    sage -i http://sage.math.washington.edu/home/SimonKing/Cohomology/p_group_cohomology-2.1.4.spkg
 
 We are sorry for the long installation time. Since version 2.1, the package
 works both on little and big endian machines.
@@ -133,6 +133,10 @@ suggesting to use the Poincare series in a completeness criterion.
 Versions
 --------
 
+  * v2.1.4: Consequently compute parameters for the *complete* cohomology
+    ring rather than only for the ring approximation. Better portability
+    by using os.path. Remove SAGE_DATA by SAGE_SHARE. Use urllib2.
+    Protocol output tells which instance's method is being called.
   * v2.1.3: Improved heuristics to choose between Hilbert-Poincare
     and Symonds criteria. Cope with Cython's new "name mangling" for
     double underscore attributes. Allow storing of "permanent results"
