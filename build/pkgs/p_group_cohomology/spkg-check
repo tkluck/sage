@@ -28,7 +28,7 @@ is installed.
 
 The script does parallel testing and uses 1/3 of the available
 CPUs. If this seems to much, the number of parallel tests
-can be restricted by providing the environment variable SAGE_NUMBER_THREADS
+can be restricted by providing the environment variable SAGE_NUM_THREADS
 with an integer value. Note that each test uses at most three
 processes, namely Sage, GAP and Singular.
 
@@ -200,7 +200,7 @@ def get_docstring(f,cl):
 
 import os, sys
 from sage.all import gap,singular
-NCPUS = os.environ.get('SAGE_NUMBER_THREADS')
+NCPUS = os.environ.get('SAGE_NUM_THREADS')
 if not NCPUS:
     NCPUS = int(multiprocessing.cpu_count()/3)+1
 else:
@@ -253,14 +253,14 @@ def one_test(s,cl,lfd_nr):
                     break
     from sage.all import walltime
     f = file(os.path.join(test_dir,'file_%d.py'%lfd_nr),'w')
-    f.write('# -*- coding: utf-8 -*-'+os.linesep+'r"""'+os.linesep+s+os.linesep+'"""')
+    f.write('# -*- coding: utf-8 -*-'+os.linesep+'r"""'+os.linesep+s+os.linesep+'"""'+os.linesep)
     os.fsync(f)
     f.close()
     wt = walltime()
-    Res = os.popen('sage -t -optional -long '+f.name).read()
+    Res = os.popen('sage -t --long '+f.name).read()
     wt = walltime(wt)
     os.unlink(f.name)
-    if Res.split(os.linesep)[-3]!='All tests passed!':
+    if 'All tests passed!' not in Res.split(os.linesep)[-6:]:
         print cl + " fails"
         return (Res,prob,wt)
     print cl + " passes in %.2f s"%wt
