@@ -16,12 +16,12 @@ GF(2).  (See also m4ri/README for a brief overview.)
 == Upstream Contact ==
 
  * Authors: Martin Albrecht et al.
- * Email:   martinralbrecht@googlemail.com
+ * Email:   <m4ri-devel@googlegroups.com>
  * Website: http://m4ri.sagemath.org
 
 == Dependencies ==
 
- none
+ * libPNG
 
 == Special Update/Build Instructions ==
  * Delete the upstream Mercurial repositories (file m4ri/.hgtags, directory m4ri/.hg).
@@ -30,6 +30,12 @@ GF(2).  (See also m4ri/README for a brief overview.)
  * Touch m4ri/configure to make sure it is newer than its sources.
 
 == Releases/Changelog ==
+
+=== libm4ri-20130416 (Martin Albrecht, 22 March 2013) ===
+ * #14335: new upstream release
+
+=== libm4ri-20121224 (Martin Albrecht, 21 December 2012) ===
+ * #13858: new upstream release
 
 === libm4ri-20120613 (Martin Albrecht, 7 June 2012) ===
  * #12840: new upstream release
