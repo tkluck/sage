@@ -52,12 +52,14 @@ graphs.
     :meth:`~Graph.is_long_antihole_free` | Tests whether ``self`` contains an induced anticycle of length at least 5.
     :meth:`~Graph.is_weakly_chordal` | Tests whether ``self`` is weakly chordal.
     :meth:`~Graph.is_strongly_regular` | Tests whether ``self`` is strongly regular.
+    :meth:`~Graph.is_tree` | Return True if the graph is a tree.
+    :meth:`~Graph.is_forest` | Return True if the graph is a forest, i.e. a disjoint union of trees.
+    :meth:`~Graph.is_overfull` | Tests whether the current graph is overfull.
     :meth:`~Graph.odd_girth` | Returns the odd girth of ``self``.
     :meth:`~Graph.is_edge_transitive` | Returns true if self is edge-transitive.
     :meth:`~Graph.is_arc_transitive` | Returns true if self is arc-transitive.
     :meth:`~Graph.is_half_transitive` | Returns true if self is a half-transitive graph.
     :meth:`~Graph.is_semi_symmetric` | Returns true if self is a semi-symmetric graph.
-
 
 **Connectivity and orientations:**
 
@@ -442,15 +444,15 @@ viewed individually by iterating through the results:
     sage: Q.show()
     Graph6
     --------------------
-    F@?]O
-    F@OKg
     F?`po
     F?gqg
-    FIAHo
+    F@?]O
+    F@OKg
     F@R@o
     FA_pW
-    FGC{o
     FEOhW
+    FGC{o
+    FIAHo
 
 Show each graph as you iterate through the results:
 
@@ -1652,6 +1654,218 @@ class Graph(GenericGraph):
 
     ### Properties
 
+    def is_tree(self, certificate = False):
+        """
+        Tests if the graph is a tree
+
+        INPUT:
+
+        - ``certificate`` (boolean) -- whether to return a certificate. The
+          method only returns boolean answers when ``certificate = False``
+          (default). When it is set to ``True``, it either answers ``(True,
+          None)`` when the graph is a tree and ``(False, cycle)`` when it
+          contains a cycle. It returns ``(False, None)`` when the graph is not
+          connected.
+
+        EXAMPLES::
+
+            sage: for g in graphs.trees(6):
+            ...     g.is_tree()
+            True
+            True
+            True
+            True
+            True
+            True
+
+        With certificates::
+
+            sage: g = graphs.RandomTree(30)
+            sage: g.is_tree(certificate = True)
+            (True, None)
+            sage: g.add_edge(10,-1)
+            sage: g.add_edge(11,-1)
+            sage: isit, cycle = g.is_tree(certificate = True)
+            sage: isit
+            False
+            sage: -1 in cycle
+            True
+        """
+        if not self.is_connected():
+            return (False,None) if certificate else False
+
+        if certificate:
+            if self.num_verts() == self.num_edges() + 1:
+                return (True, None)
+
+            # This code is a depth-first search that looks for a cycle in the
+            # graph. We *know* it exists as there are too many edges around.
+            n = self.order()
+            seen = {}
+            u = self.vertex_iterator().next()
+            v = self.neighbor_iterator(u).next()
+            seen[u] = u
+            stack = [(u,v)]
+            while stack:
+                u,v = stack.pop(-1)
+                if v in seen:
+                    continue
+                for w in self.neighbors(v):
+                    if u == w:
+                        continue
+                    elif w in seen:
+                        cycle = [v,w]
+                        while u != w:
+                            cycle.insert(0,u)
+                            u = seen[u]
+                        return (False,cycle)
+                    else:
+                        stack.append((v,w))
+                seen[v] = u
+
+        else:
+            return self.num_verts() == self.num_edges() + 1
+
+    def is_forest(self, certificate = False):
+        """
+        Tests if the graph is a forest, i.e. a disjoint union of trees.
+
+        INPUT:
+
+        - ``certificate`` (boolean) -- whether to return a certificate. The
+          method only returns boolean answers when ``certificate = False``
+          (default). When it is set to ``True``, it either answers ``(True,
+          None)`` when the graph is a forest and ``(False, cycle)`` when it
+          contains a cycle.
+
+        EXAMPLES::
+
+            sage: seven_acre_wood = sum(graphs.trees(7), Graph())
+            sage: seven_acre_wood.is_forest()
+            True
+
+        With certificates::
+
+            sage: g = graphs.RandomTree(30)
+            sage: g.is_forest(certificate = True)
+            (True, None)
+            sage: (2*g + graphs.PetersenGraph() + g).is_forest(certificate = True)
+            (False, [60, 61, 62, 63, 64])
+        """
+        number_of_connected_components = len(self.connected_components())
+        isit = (self.num_verts() ==
+                self.num_edges() + number_of_connected_components)
+
+        if not certificate:
+            return isit
+        else:
+            if isit:
+                return (True, None)
+            # The graph contains a cycle, and the user wants to see it.
+
+            # No need to copy the graph
+            if number_of_connected_components == 1:
+                return self.is_tree(certificate = True)
+
+            # We try to find a cycle in each connected component
+            for gg in self.connected_components_subgraphs():
+                isit, cycle = gg.is_tree(certificate = True)
+                if not isit:
+                    return (False,cycle)
+
+    def is_overfull(self):
+        r"""
+        Tests whether the current graph is overfull.
+
+        A graph `G` on `n` vertices and `m` edges is said to
+        be overfull if:
+
+        - `n` is odd
+
+        - It satisfies `2m > (n-1)\Delta(G)`, where
+          `\Delta(G)` denotes the maximum degree
+          among all vertices in `G`.
+
+        An overfull graph must have a chromatic index of `\Delta(G)+1`.
+
+        EXAMPLES:
+
+        A complete graph of order `n > 1` is overfull if and only if `n` is
+        odd::
+
+            sage: graphs.CompleteGraph(6).is_overfull()
+            False
+            sage: graphs.CompleteGraph(7).is_overfull()
+            True
+            sage: graphs.CompleteGraph(1).is_overfull()
+            False
+
+        The claw graph is not overfull::
+
+            sage: from sage.graphs.graph_coloring import edge_coloring
+            sage: g = graphs.ClawGraph()
+            sage: g
+            Claw graph: Graph on 4 vertices
+            sage: edge_coloring(g, value_only=True)
+            3
+            sage: g.is_overfull()
+            False
+
+        Checking that all complete graphs `K_n` for even `0 \leq n \leq 100`
+        are not overfull::
+
+            sage: def check_overfull_Kn_even(n):
+            ...       i = 0
+            ...       while i <= n:
+            ...           if graphs.CompleteGraph(i).is_overfull():
+            ...               print "A complete graph of even order cannot be overfull."
+            ...               return
+            ...           i += 2
+            ...       print "Complete graphs of even order up to %s are not overfull." % n
+            ...
+            sage: check_overfull_Kn_even(100)  # long time
+            Complete graphs of even order up to 100 are not overfull.
+
+        The null graph, i.e. the graph with no vertices, is not overfull::
+
+            sage: Graph().is_overfull()
+            False
+            sage: graphs.CompleteGraph(0).is_overfull()
+            False
+
+        Checking that all complete graphs `K_n` for odd `1 < n \leq 100`
+        are overfull::
+
+            sage: def check_overfull_Kn_odd(n):
+            ...       i = 3
+            ...       while i <= n:
+            ...           if not graphs.CompleteGraph(i).is_overfull():
+            ...               print "A complete graph of odd order > 1 must be overfull."
+            ...               return
+            ...           i += 2
+            ...       print "Complete graphs of odd order > 1 up to %s are overfull." % n
+            ...
+            sage: check_overfull_Kn_odd(100)  # long time
+            Complete graphs of odd order > 1 up to 100 are overfull.
+
+        The Petersen Graph, though, is not overfull while
+        its chromatic index is `\Delta+1`::
+
+            sage: g = graphs.PetersenGraph()
+            sage: g.is_overfull()
+            False
+            sage: from sage.graphs.graph_coloring import edge_coloring
+            sage: max(g.degree()) + 1 ==  edge_coloring(g, value_only=True)
+            True
+        """
+        # # A possible optimized version. But the gain in speed is very little.
+        # return bool(self._backend.num_verts() & 1) and (  # odd order n
+        #     2 * self._backend.num_edges(self._directed) > #2m > \Delta(G)*(n-1)
+        #     max(self.degree()) * (self._backend.num_verts() - 1))
+        # unoptimized version
+        return (self.order() % 2 == 1) and (
+            2 * self.size() > max(self.degree()) * (self.order() - 1))
+
     def is_even_hole_free(self, certificate = False):
         r"""
         Tests whether ``self`` contains an induced even hole.
@@ -1836,59 +2050,6 @@ class Graph(GenericGraph):
                     return False
 
             start += 2
-
-        return True
-
-    def is_line_graph(self, certificate = False):
-        r"""
-        Tests wether the graph is a line graph.
-
-        INPUT:
-
-        - ``certificate`` (boolean) -- whether to return a certificate
-          when the graph is *not* a line graph. When ``certificate``
-          is set to ``True``, and if the graph is not a line graph,
-          the method returns a subgraph isomorphic to one of the 9
-          forbidden induced subgraphs of a line graph (instead of the
-          usual ``False``)
-
-
-        TODO:
-
-        This methods sequentially tests each of the forbidden
-        subgraphs, which is a very slow method. There exist much
-        better algorithms, including those which are actually able to
-        return a graph whose line graph is isomorphic to the given
-        graph.
-
-        EXAMPLES:
-
-        A complete graph is always the line graph of a star::
-
-            sage: graphs.CompleteGraph(5).is_line_graph()
-            True
-
-        The Petersen Graph not being claw-free, it is not a line
-        graph:
-
-            sage: graphs.PetersenGraph().is_line_graph()
-            False
-
-        This is indeed the subgraph returned::
-
-            sage: C = graphs.PetersenGraph().is_line_graph(certificate = True)
-            sage: C.is_isomorphic(graphs.ClawGraph())
-            True
-        """
-        from sage.graphs.graph_generators import graphs
-
-        for g in graphs.line_graph_forbidden_subgraphs():
-            h = self.subgraph_search(g, induced = True)
-            if h is not None:
-                if certificate:
-                    return h
-                else:
-                    return False
 
         return True
 
@@ -5843,6 +6004,10 @@ Graph.cliques_maximum = types.MethodType(sage.graphs.cliquer.all_max_clique, Non
 
 import sage.graphs.graph_decompositions.graph_products
 Graph.is_cartesian_product = types.MethodType(sage.graphs.graph_decompositions.graph_products.is_cartesian_product, None, Graph)
+
+# From Python modules
+import sage.graphs.line_graph
+Graph.is_line_graph = sage.graphs.line_graph.is_line_graph
 
 def compare_edges(x, y):
     """

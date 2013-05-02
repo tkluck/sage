@@ -602,7 +602,7 @@ class _Latex_prefs_object(SageObject):
         self._option["vector_delimiters"] = list(delimiters)
         self._option["macros"] = ""
         self._option["preamble"] = ""
-        self._option["engine"] = "latex"
+        self._option["engine"] = "pdflatex"
         self._option["engine_name"] = "LaTeX"
         self._option["mathjax_avoid"] = []
 
@@ -657,7 +657,7 @@ def _run_latex_(filename, debug=False, density=150, engine=None, png=False, do_i
     """
     This runs LaTeX on the TeX file "filename.tex".  It produces files
     "filename.dvi" (or "filename.pdf"` if engine is either ``pdflatex``
-    or ``xelatex'') and if ``png`` is ``True``, "filename.png".  If ``png``
+    or ``xelatex``) and if ``png`` is ``True``, "filename.png".  If ``png``
     is ``True`` and dvipng can't convert the dvi file to png (because of
     postscript specials or other issues), then dvips is called, and the
     PS file is converted to a png file.
@@ -1641,10 +1641,10 @@ Warning: `%s` is not part of this computer's TeX installation."""%file_name
         EXAMPLES::
 
             sage: latex.engine()
-            'latex'
-            sage: latex.engine("pdflatex")
-            sage: latex.engine()
             'pdflatex'
+            sage: latex.engine("latex")
+            sage: latex.engine()
+            'latex'
             sage: latex.engine("xelatex")
             sage: latex.engine()
             'xelatex'
@@ -1986,7 +1986,19 @@ def view(objects, title='Sage', debug=False, sep='', tiny=False,
     -  ``pdflatex`` -- bool (default: ``False``): use pdflatex. This is
        deprecated. Use ``'engine'`` option instead.
 
-    -  ``engine`` -- ``'latex'``, ``'pdflatex'``, or ``'xelatex'``
+    -  ``engine`` -- string or ``None`` (default: ``None``). Can take the
+       following values:
+
+       - ``None`` -- the value defined in the LaTeX global preferences
+         ``latex.engine()`` is used.
+
+       - ``'pdflatex'`` -- compilation does tex -> pdf
+
+       - ``'xelatex'`` -- compilation does tex -> pdf
+
+       - ``'latex'`` -- compilation first tries tex -> dvi -> png and if an
+         error occurs then tries dvi -> ps -> pdf. This is slower than
+         ``'pdflatex'`` and known to be broken when overfull hbox are detected.
 
     -  ``viewer`` -- string or ``None`` (default: ``None``): specify a viewer
        to use; currently the only options are ``None`` and ``'pdf'``.
@@ -2022,7 +2034,9 @@ def view(objects, title='Sage', debug=False, sep='', tiny=False,
     inserts a page break between objects.
 
     If ``pdflatex`` is ``True``, then the latex engine is set to
-    pdflatex. If the engine is either pdflatex or xelatex,  it produces
+    pdflatex.
+
+    If the ``engine`` is either ``pdflatex`` or ``xelatex``,  it produces
     a pdf file. Otherwise, it produces a dvi file, and if the program dvipng is
     installed, it checks the dvi file by trying to convert it to a png
     file.  If this conversion fails, the dvi file probably contains
@@ -2636,14 +2650,14 @@ class LatexExamples():
             """
             return r"""LaTeX example for testing display of graphs.
 
-To use, first try calling 'view' on this object -- you should get
-gibberish.  Now, make sure that you have the most recent version of
-the TeX package pgf installed, along with the LaTeX package tkz-graph.
-Run 'latex.add_to_preamble("\\usepackage{tkz-graph}")', and try viewing
-it again.  From the command line, this should pop open a nice window
-with a picture of a graph.  In the notebook, you should get a MathJax
-error.  Finally, run 'latex.add_to_mathjax_avoid_list("tikzpicture")'
-and try again from the notebook -- you should get a nice picture.
+To use, first try calling 'view' on this object -- it won't work.
+Now, make sure that you have the most recent version of the TeX
+package pgf installed, along with the LaTeX package tkz-graph.  Run
+'latex.add_to_preamble("\\usepackage{tkz-graph}")', and try viewing it
+again.  From the command line, this should pop open a nice window with
+a picture of a graph.  In the notebook, it still won't work.  Finally,
+run 'latex.add_to_mathjax_avoid_list("tikzpicture")' and try again
+from the notebook -- you should get a nice picture.
 
 (LaTeX code taken from http://altermundus.com/pages/graph.html)
 """
@@ -2716,16 +2730,16 @@ and try again from the notebook -- you should get a nice picture.
             """
             return """LaTeX example for testing display of pstricks output.
 
-To use, first try calling 'view' on this object -- you
-should get gibberish.  Now, make sure that you have the most
-recent version of the TeX package pstricks installed. Run
-'latex.add_to_preamble("\\usepackage{pstricks}")' and try
-viewing it again. From the command line, this should pop
-open a nice window with a picture of forces acting on a mass
-on a pendulum. In the notebook, you should get an error.
-Finally, run
-'latex.add_to_mathjax_avoid_list("pspicture")' and try again
--- you should get a nice picture."""
+To use, first try calling 'view' on this object -- it won't work. Now,
+make sure that you have the most recent version of the TeX package
+pstricks installed.  Run 'latex.add_to_preamble("\\usepackage{pstricks}")'
+and try viewing it again. Call 'view' with the option `engine='latex'`
+-- the default behavior is to use pdflatex, which doesn't work with
+pstricks.  From the command line, this should pop open a nice window
+with a picture of forces acting on a mass on a pendulum.  In the
+notebook, it still won't work, so run
+'latex.add_to_mathjax_avoid_list("pspicture")' and try again -- you
+should get a nice picture."""
 
         def _latex_(self):
             """

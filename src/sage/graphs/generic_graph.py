@@ -162,9 +162,6 @@ can be applied on both. Here is what it can do:
     :delim: |
 
     :meth:`~GenericGraph.is_eulerian` | Return true if the graph has a (closed) tour that visits each edge exactly once.
-    :meth:`~GenericGraph.is_tree` | Return True if the graph is a tree.
-    :meth:`~GenericGraph.is_forest` | Return True if the graph is a forest, i.e. a disjoint union of trees.
-    :meth:`~GenericGraph.is_overfull` | Tests whether the current graph is overfull.
     :meth:`~GenericGraph.is_planar` | Tests whether the graph is planar.
     :meth:`~GenericGraph.is_circular_planar` | Tests whether the graph is circular planar (outerplanar)
     :meth:`~GenericGraph.is_regular` | Return ``True`` if this graph is (`k`-)regular.
@@ -2338,135 +2335,6 @@ class GenericGraph(GenericGraph_pyx):
 
         return True if not path else tuple(uv)
 
-    def is_tree(self):
-        """
-        Return True if the graph is a tree.
-
-        EXAMPLES::
-
-            sage: for g in graphs.trees(6):
-            ...     g.is_tree()
-            True
-            True
-            True
-            True
-            True
-            True
-        """
-        if not self.is_connected():
-            return False
-        if self.num_verts() != self.num_edges() + 1:
-            return False
-        return True
-
-    def is_forest(self):
-        """
-        Return True if the graph is a forest, i.e. a disjoint union of
-        trees.
-
-        EXAMPLES::
-
-            sage: seven_acre_wood = sum(graphs.trees(7), Graph())
-            sage: seven_acre_wood.is_forest()
-            True
-        """
-        number_of_connected_components = len(self.connected_components())
-
-        return self.num_verts() == self.num_edges() + number_of_connected_components
-
-    def is_overfull(self):
-        r"""
-        Tests whether the current graph is overfull.
-
-        A graph `G` on `n` vertices and `m` edges is said to
-        be overfull if:
-
-        - `n` is odd
-
-        - It satisfies `2m > (n-1)\Delta(G)`, where
-          `\Delta(G)` denotes the maximum degree
-          among all vertices in `G`.
-
-        An overfull graph must have a chromatic index of `\Delta(G)+1`.
-
-        EXAMPLES:
-
-        A complete graph of order `n > 1` is overfull if and only if `n` is
-        odd::
-
-            sage: graphs.CompleteGraph(6).is_overfull()
-            False
-            sage: graphs.CompleteGraph(7).is_overfull()
-            True
-            sage: graphs.CompleteGraph(1).is_overfull()
-            False
-
-        The claw graph is not overfull::
-
-            sage: from sage.graphs.graph_coloring import edge_coloring
-            sage: g = graphs.ClawGraph()
-            sage: g
-            Claw graph: Graph on 4 vertices
-            sage: edge_coloring(g, value_only=True)
-            3
-            sage: g.is_overfull()
-            False
-
-        Checking that all complete graphs `K_n` for even `0 \leq n \leq 100`
-        are not overfull::
-
-            sage: def check_overfull_Kn_even(n):
-            ...       i = 0
-            ...       while i <= n:
-            ...           if graphs.CompleteGraph(i).is_overfull():
-            ...               print "A complete graph of even order cannot be overfull."
-            ...               return
-            ...           i += 2
-            ...       print "Complete graphs of even order up to %s are not overfull." % n
-            ...
-            sage: check_overfull_Kn_even(100)  # long time
-            Complete graphs of even order up to 100 are not overfull.
-
-        The null graph, i.e. the graph with no vertices, is not overfull::
-
-            sage: Graph().is_overfull()
-            False
-            sage: graphs.CompleteGraph(0).is_overfull()
-            False
-
-        Checking that all complete graphs `K_n` for odd `1 < n \leq 100`
-        are overfull::
-
-            sage: def check_overfull_Kn_odd(n):
-            ...       i = 3
-            ...       while i <= n:
-            ...           if not graphs.CompleteGraph(i).is_overfull():
-            ...               print "A complete graph of odd order > 1 must be overfull."
-            ...               return
-            ...           i += 2
-            ...       print "Complete graphs of odd order > 1 up to %s are overfull." % n
-            ...
-            sage: check_overfull_Kn_odd(100)  # long time
-            Complete graphs of odd order > 1 up to 100 are overfull.
-
-        The Petersen Graph, though, is not overfull while
-        its chromatic index is `\Delta+1`::
-
-            sage: g = graphs.PetersenGraph()
-            sage: g.is_overfull()
-            False
-            sage: from sage.graphs.graph_coloring import edge_coloring
-            sage: max(g.degree()) + 1 ==  edge_coloring(g, value_only=True)
-            True
-        """
-        # # A possible optimized version. But the gain in speed is very little.
-        # return bool(self._backend.num_verts() & 1) and (  # odd order n
-        #     2 * self._backend.num_edges(self._directed) > #2m > \Delta(G)*(n-1)
-        #     max(self.degree()) * (self._backend.num_verts() - 1))
-        # unoptimized version
-        return (self.order() % 2 == 1) and (
-            2 * self.size() > max(self.degree()) * (self.order() - 1))
-
     def order(self):
         """
         Returns the number of vertices. Note that len(G) returns the number
@@ -3950,7 +3818,7 @@ class GenericGraph(GenericGraph_pyx):
             sage: Graph(0).blocks_and_cut_vertices()
             ([], [])
             sage: Graph(1).blocks_and_cut_vertices()
-            ([0], [])
+            ([[0]], [])
             sage: Graph(2).blocks_and_cut_vertices()
             Traceback (most recent call last):
             ...
@@ -3967,7 +3835,7 @@ class GenericGraph(GenericGraph_pyx):
         start = self.vertex_iterator().next() # source
 
         if len(self) == 1: # only one vertex
-            return [start],[]
+            return [[start]],[]
 
         if not self.is_connected():
             raise NotImplementedError("Blocks and cut vertices is currently only implemented for connected graphs.")
@@ -13068,145 +12936,6 @@ class GenericGraph(GenericGraph_pyx):
                     G.add_edge(u,v)
         return G
 
-    def line_graph(self, labels=True):
-        """
-        Returns the line graph of the (di)graph.
-
-        INPUT:
-
-        - ``labels`` (boolean) -- whether edge labels should be taken in
-          consideration. If ``labels=True``, the vertices of the line graph will
-          be triples ``(u,v,label)``, and pairs of vertices otherwise.
-
-          This is set to ``True`` by default.
-
-        The line graph of an undirected graph G is an undirected graph H
-        such that the vertices of H are the edges of G and two vertices e
-        and f of H are adjacent if e and f share a common vertex in G. In
-        other words, an edge in H represents a path of length 2 in G.
-
-        The line graph of a directed graph G is a directed graph H such
-        that the vertices of H are the edges of G and two vertices e and f
-        of H are adjacent if e and f share a common vertex in G and the
-        terminal vertex of e is the initial vertex of f. In other words, an
-        edge in H represents a (directed) path of length 2 in G.
-
-        .. NOTE::
-
-            As a :class:`Graph` object only accepts hashable objects as vertices
-            (and as the vertices of the line graph are the edges of the graph),
-            this code will fail if edge labels are not hashable. You can also
-            set the argument ``labels=False`` to ignore labels.
-
-        EXAMPLES::
-
-            sage: g = graphs.CompleteGraph(4)
-            sage: h = g.line_graph()
-            sage: h.vertices()
-            [(0, 1, None),
-            (0, 2, None),
-            (0, 3, None),
-            (1, 2, None),
-            (1, 3, None),
-            (2, 3, None)]
-            sage: h.am()
-            [0 1 1 1 1 0]
-            [1 0 1 1 0 1]
-            [1 1 0 0 1 1]
-            [1 1 0 0 1 1]
-            [1 0 1 1 0 1]
-            [0 1 1 1 1 0]
-            sage: h2 = g.line_graph(labels=False)
-            sage: h2.vertices()
-            [(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)]
-            sage: h2.am() == h.am()
-            True
-            sage: g = DiGraph([[1..4],lambda i,j: i<j])
-            sage: h = g.line_graph()
-            sage: h.vertices()
-            [(1, 2, None),
-            (1, 3, None),
-            (1, 4, None),
-            (2, 3, None),
-            (2, 4, None),
-            (3, 4, None)]
-            sage: h.edges()
-            [((1, 2, None), (2, 3, None), None),
-             ((1, 2, None), (2, 4, None), None),
-             ((1, 3, None), (3, 4, None), None),
-             ((2, 3, None), (3, 4, None), None)]
-
-        Tests:
-
-        :trac:`13787`::
-
-            sage: g = graphs.KneserGraph(7,1)
-            sage: C = graphs.CompleteGraph(7)
-            sage: C.is_isomorphic(g)
-            True
-            sage: C.line_graph().is_isomorphic(g.line_graph())
-            True
-        """
-        if self._directed:
-            from sage.graphs.digraph import DiGraph
-            G=DiGraph()
-            G.add_vertices(self.edges(labels=labels))
-            for v in self:
-                # Connect appropriate incident edges of the vertex v
-                G.add_edges([(e,f) for e in self.incoming_edge_iterator(v, labels=labels) \
-                             for f in self.outgoing_edge_iterator(v, labels=labels)])
-            return G
-        else:
-            from sage.graphs.all import Graph
-            G=Graph()
-
-            # We must sort the edges' endpoints so that (1,2,None) is seen as
-            # the same edge as (2,1,None).
-            #
-            # We do so by comparing hashes, just in case all the natural order
-            # (<) on vertices would not be a total order (for instance when
-            # vertices are sets). If two adjacent vertices have the same hash,
-            # then we store the pair in the dictionary of conflicts
-
-            conflicts = {}
-
-            # 1) List of vertices in the line graph
-            elist = []
-            for e in self.edge_iterator(labels = labels):
-                if hash(e[0]) < hash(e[1]):
-                    elist.append(e)
-                elif hash(e[0]) > hash(e[1]):
-                    elist.append((e[1],e[0])+e[2:])
-                else:
-                    # Settle the conflict arbitrarily
-                    conflicts[e] = e
-                    conflicts[(e[1],e[0])+e[2:]] = e
-                    elist.append(e)
-
-            G.add_vertices(elist)
-
-            # 2) adjacencies in the line graph
-            for v in self:
-                elist = []
-
-                # Add the edge to the list, according to hashes, as previously
-                for e in self.edge_iterator(v, labels=labels):
-                    if hash(e[0]) < hash(e[1]):
-                        elist.append(e)
-                    elif hash(e[0]) > hash(e[1]):
-                        elist.append((e[1],e[0])+e[2:])
-                    else:
-                        elist.append(conflicts[e])
-
-                # Alls pairs of elements in elist are edges of the
-                # line graph
-                while elist:
-                    x = elist.pop()
-                    for y in elist:
-                        G.add_edge(x,y)
-
-            return G
-
     def to_simple(self):
         """
         Returns a simple version of itself (i.e., undirected and loops and
@@ -13242,14 +12971,12 @@ class GenericGraph(GenericGraph_pyx):
 
         INPUT:
 
-
         -  ``verbose_relabel`` - (defaults to True) If True
            and the graphs have common vertices, then each vertex v in the
            first graph will be changed to '0,v' and each vertex u in the
            second graph will be changed to '1,u'. If False, the vertices of
            the first graph and the second graph will be relabeled with
            consecutive integers.
-
 
         EXAMPLES::
 
@@ -14272,7 +13999,8 @@ class GenericGraph(GenericGraph_pyx):
             sage: G.plot(layout="tree", tree_root = 0, tree_orientation = "up")
         """
         assert dim == 2, "3D tree layout not implemented"
-        if not self.is_tree():
+        from sage.graphs.graph import Graph
+        if not Graph(self).is_tree():
             raise RuntimeError("Cannot use tree layout on this graph: self.is_tree() returns False.")
         n = self.order()
         vertices = self.vertices()
@@ -16358,9 +16086,9 @@ class GenericGraph(GenericGraph_pyx):
             (24, [(2,3), (1,2), (1,4)])
             (4, [(2,3), (1,4)])
             (2, [(1,2)])
-            (8, [(1,2), (1,4)(2,3)])
             (6, [(1,2), (1,4)])
             (6, [(2,3), (1,2)])
+            (8, [(1,2), (1,4)(2,3)])
             (2, [(1,4)(2,3)])
             (2, [(1,2)])
             (8, [(2,3), (1,3)(2,4), (1,4)])
@@ -17073,6 +16801,10 @@ import types
 import sage.graphs.distances_all_pairs
 GenericGraph.distances_distribution = types.MethodType(sage.graphs.distances_all_pairs.distances_distribution, None, GenericGraph)
 GenericGraph.wiener_index = types.MethodType(sage.graphs.distances_all_pairs.wiener_index, None, GenericGraph)
+
+# From Python modules
+import sage.graphs.line_graph
+GenericGraph.line_graph = sage.graphs.line_graph.line_graph
 
 def tachyon_vertex_plot(g, bgcolor=(1,1,1),
                         vertex_colors=None,

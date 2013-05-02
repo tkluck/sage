@@ -64,7 +64,9 @@ TESTS::
 
 include "../../ext/interrupt.pxi"  # ctrl-c interrupt block support
 include "../../ext/stdsage.pxi"
-include "../../ext/python_int.pxi"
+from cpython.int cimport *
+from cpython.list cimport *
+from cpython.ref cimport *
 
 cdef extern from "math.h":
     double log(double)

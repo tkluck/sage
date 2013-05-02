@@ -78,7 +78,7 @@ from sage.misc.classcall_metaclass import ClasscallMetaclass
 from sage.misc.decorators import rename_keyword
 from sage.rings.finite_rings.integer_mod_ring import IntegerModRing
 from sage.rings.infinity import PlusInfinity
-from sage.rings.arith import factorial
+from sage.rings.arith import factorial, binomial
 from sage.rings.integer import Integer
 from sage.combinat.combinat import CombinatorialObject
 import sage.combinat.skew_tableau
@@ -89,7 +89,7 @@ import copy
 import permutation
 from sage.misc.flatten import flatten
 from sage.groups.perm_gps.permgroup import PermutationGroup
-from sage.misc.misc import uniq
+from sage.misc.misc import uniq, prod
 from sage.misc.sage_unittest import TestSuite
 from sage.categories.finite_enumerated_sets import FiniteEnumeratedSets
 from sage.categories.infinite_enumerated_sets import InfiniteEnumeratedSets
@@ -564,12 +564,15 @@ class Tableau(CombinatorialObject, Element):
     @combinatorial_map(order=2,name='conjugate')
     def conjugate(self):
         """
-        Returns the conjugate of the tableau t.
+        Return the conjugate of ``self``.
 
         EXAMPLES::
 
             sage: Tableau([[1,2],[3,4]]).conjugate()
             [[1, 3], [2, 4]]
+            sage: c = StandardTableau([[1,2],[3,4]]).conjugate()
+            sage: c.parent()
+            Standard tableaux
         """
         conj_shape = self.shape().conjugate()
 
@@ -579,7 +582,8 @@ class Tableau(CombinatorialObject, Element):
             for j in range(len(conj[i])):
                 conj[i][j] = self[j][i]
 
-
+        if isinstance(self, StandardTableau):
+            return StandardTableau(conj)
         return Tableau(conj)
 
     def pp(self):
@@ -772,21 +776,23 @@ class Tableau(CombinatorialObject, Element):
 
     @combinatorial_map(order=2,name='Schuetzenberger involution')
     def schuetzenberger_involution(self, n = None):
-        """
-        Returns the Schuetzenberger involution of the tableau self.
-        This method relies on the analogous method on words, which reverts the word
-        and then complements all letters within the underlying ordered alphabet.
-        If `n` is specified, the underlying alphabet is assumed to be `[1,2,\ldots,n]`.
-        If no alphabet is specified, `n` is the maximal letter appearing in self.
+        r"""
+        Return the Schuetzenberger involution of the tableau ``self``.
+
+        This method relies on the analogous method on words, which reverts the
+        word and then complements all letters within the underlying ordered
+        alphabet. If `n` is specified, the underlying alphabet is assumed to
+        be `[1, 2, \ldots, n]`. If no alphabet is specified, `n` is the maximal
+        letter appearing in ``self``.
 
         INPUT:
 
-        - ``self`` -- a tableau
-        - ``n``    -- an integer specifying the maximal letter in the alphabet (optional)
+        - ``n`` -- an integer specifying the maximal letter in the
+          alphabet (optional)
 
         OUTPUT:
 
-        - a tableau, the Schuetzenberger involution of self
+        - a tableau, the Schuetzenberger involution of ``self``
 
         EXAMPLES::
 
@@ -805,6 +811,11 @@ class Tableau(CombinatorialObject, Element):
             sage: t = Tableau([])
             sage: t.schuetzenberger_involution()
             []
+
+            sage: t = StandardTableau([[1,2,3],[4,5]])
+            sage: s = t.schuetzenberger_involution()
+            sage: s.parent()
+            Standard tableaux
         """
         w = self.to_word()
         if w.length() == 0:
@@ -813,6 +824,8 @@ class Tableau(CombinatorialObject, Element):
         t = Tableau([[wi[0]]])
         for k in range(1, w.length()):
             t = t.bump(wi[k])
+        if isinstance(self, StandardTableau):
+            return StandardTableau(list(t))
         return t
 
     @combinatorial_map(name ='reading word permutation')
@@ -1124,6 +1137,25 @@ class Tableau(CombinatorialObject, Element):
         m = max(self.to_word())
         return [self.restrict(k).shape() for k in range(m+1)]
 
+    @combinatorial_map(name='to Gelfand-Tsetlin pattern')
+    def to_Gelfand_Tsetlin_pattern(self):
+        """
+        Return the :class:`Gelfand-Tsetlin pattern <GelfandTsetlinPattern>`
+        corresponding to ``self`` when semistandard.
+
+        EXAMPLES::
+
+            sage: T = Tableau([[1,2,3],[2,3],[3]])
+            sage: G = T.to_Gelfand_Tsetlin_pattern(); G
+            [[3, 2, 1], [2, 1], [1]]
+            sage: G.to_tableau() == T
+            True
+            sage: T = Tableau([[1,3],[2]])
+            sage: T.to_Gelfand_Tsetlin_pattern()
+            [[2, 1, 0], [1, 1], [1]]
+        """
+        from sage.combinat.gelfand_tsetlin_patterns import GelfandTsetlinPatterns
+        return GelfandTsetlinPatterns()(self)
 
     def anti_restrict(self, n):
         """
@@ -1283,10 +1315,7 @@ class Tableau(CombinatorialObject, Element):
                 done = True
 
             row += 1
-
         return Tableau(new_t)
-
-
 
     def schensted_insert(self, i, left=False):
         """
@@ -2167,6 +2196,166 @@ class Tableau(CombinatorialObject, Element):
         except StandardError:
             return Tableau([[w[entry-1] for entry in row] for row in self])
 
+    def is_key_tableau(self):
+        """
+        Return ``True`` if ``self`` is a key tableau or ``False`` otherwise.
+
+        A tableau is a *key tableau* if the set of entries in the `j`-th
+        column are a subset of the set of entries in the `(j-1)`-st column.
+
+        REFERENCES:
+
+        .. [LS90] A. Lascoux, M.-P. Schutzenberger.
+           Keys and standard bases, invariant theory and tableaux.
+           IMA Volumes in Math and its Applications (D. Stanton, ED.).
+           Southend on Sea, UK, 19 (1990). 125-144.
+
+        .. [Willis10] M. Willis. A direct way to find the right key of
+           a semistandard Young tableau. :arxiv:`1110.6184v1`.
+
+        EXAMPLES::
+
+            sage: t = Tableau([[1,1,1],[2,3],[3]])
+            sage: t.is_key_tableau()
+            True
+
+            sage: t = Tableau([[1,1,2],[2,3],[3]])
+            sage: t.is_key_tableau()
+            False
+        """
+        itr = enumerate(self.conjugate()[1:],1)
+        return all(x in self.conjugate()[i-1] for i, col in itr for x in col)
+
+    def right_key_tableau(self):
+        """
+        Return the right key tableau of ``self``.
+
+        The right key tableau of a tableau `T` is a key tableau whose entries
+        are weakly greater than the corresponding entries in `T`, and whose column
+        reading word is subject to certain conditions. See [LS90]_ for the full definition.
+
+        ALGORITHM:
+
+        The following algorithm follows [Willis10]_. Note that if `T` is a key tableau
+        then the output of the algorithm is `T`.
+
+        To compute the right key tableau `R` of a tableau `T` we iterate over the columns
+        of `T`. Let `T_j` be the `j`-th column of `T` and iterate over the entires
+        in `T_j` from bottom to top. Initialize the corresponding entry `k` in `R` to be
+        the largest entry in `T_j`. Scan the bottom of each column of `T` to the right of
+        `T_j`, updating `k` to be the scanned entry whenever the scanned entry is weakly
+        greater than `k`. Update `T_j` and all columns to the right by removing all
+        scanned entries.
+
+        .. SEEALSO::
+
+            - :meth:`is_key_tableau()`
+
+        EXAMPLES::
+
+            sage: t = Tableau([[1,2],[2,3]])
+            sage: t.right_key_tableau()
+            [[2, 2], [3, 3]]
+            sage: t = Tableau([[1,1,2,4],[2,3,3],[4],[5]])
+            sage: t.right_key_tableau()
+            [[2, 2, 2, 4], [3, 4, 4], [4], [5]]
+
+        TESTS:
+
+        We check that if we have a key tableau, we return the same tableau::
+
+            sage: t = Tableau([[1,1,1,2], [2,2,2], [4], [5]])
+            sage: t.is_key_tableau()
+            True
+            sage: t.right_key_tableau() == t
+            True
+        """
+        if self.is_key_tableau():
+            return self
+
+        key = [[] for row in self.conjugate()]
+        cols_list = self.conjugate().to_list()
+
+        for i, col_a in enumerate(cols_list):
+            right_cols = cols_list[i+1:]
+            for elem in reversed(col_a):
+                key_val = elem
+                update = []
+                for col_b in right_cols:
+                    if col_b != [] and key_val <= col_b[-1]:
+                        key_val = col_b[-1]
+                        update.append(col_b[:-1])
+                    else:
+                        update.append(col_b)
+                key[i].insert(0,key_val)
+                right_cols = update
+        return Tableau(key).conjugate()
+
+    def left_key_tableau(self):
+        """
+        Return the left key tableau of ``self``.
+
+        The left key tableau of a tableau `T` is the key tableau whose entries
+        are weakly lesser than the corresponding entries in `T`, and whose column
+        reading word is subject to certain conditions. See [LS90]_ for the full definition.
+
+        ALGORITHM:
+
+        The following algorithm follows [Willis10]_. Note that if `T` is a key tableau
+        then the output of the algorithm is `T`.
+
+        To compute the left key tableau `L` of a tableau `T` we iterate over the columns
+        of `T`. Let `T_j` be the `j`-th column of `T` and iterate over the entires
+        in `T_j` from bottom to top. Initialize the corresponding entry `k` in `L` as the
+        largest entry in `T_j`. Scan the columns to the left of `T_j` and with each column
+        update `k` to be the lowest entry in that column which is weakly less than `k`.
+        Update `T_j` and all columns to the left by removing all scanned entries.
+
+        .. SEEALSO::
+
+            - :meth:`is_key_tableau()`
+
+        EXAMPLES::
+
+            sage: t = Tableau([[1,2],[2,3]])
+            sage: t.left_key_tableau()
+            [[1, 1], [2, 2]]
+            sage: t = Tableau([[1,1,2,4],[2,3,3],[4],[5]])
+            sage: t.left_key_tableau()
+            [[1, 1, 1, 2], [2, 2, 2], [4], [5]]
+
+        TESTS:
+
+        We check that if we have a key tableau, we return the same tableau::
+
+            sage: t = Tableau([[1,1,1,2], [2,2,2], [4], [5]])
+            sage: t.is_key_tableau()
+            True
+            sage: t.left_key_tableau() == t
+            True
+        """
+        if self.is_key_tableau():
+            return self
+
+        key = [[] for row in self.conjugate()]
+        key[0] = self.conjugate()[0]
+        cols_list = self.conjugate().to_list()
+
+        from bisect import bisect_right
+        for i, col_a in enumerate(cols_list[1:],1):
+            left_cols = cols_list[:i]
+            for elem in reversed(col_a):
+                key_val = elem
+                update = []
+                for col_b in reversed(left_cols):
+                    j = bisect_right(col_b, key_val) - 1
+                    key_val = col_b[j]
+                    update.insert(0, col_b[:j])
+                left_cols = update
+                key[i].insert(0,key_val)
+        return Tableau(key).conjugate()
+
+
 
 class SemistandardTableau(Tableau):
     """
@@ -2456,6 +2645,16 @@ class StandardTableau(SemistandardTableau):
         return all(self.restrict(m).shape().dominates(t.restrict(m).shape())
                         for m in xrange(1,1+self.size()))
 
+    def is_standard(self):
+        """
+        Return ``True`` since ``self`` is a standard tableau.
+
+        EXAMPLES::
+
+            sage: StandardTableau([[1, 3], [2, 4]]).is_standard()
+            True
+        """
+        return True
 
 def from_chain(chain):
     """
@@ -4163,7 +4362,7 @@ class StandardTableaux_size(StandardTableaux):
         """
         super(StandardTableaux_size, self).__init__(
               category = FiniteEnumeratedSets())
-        self.size = n
+        self.size = Integer(n)
 
 
     def _repr_(self):
@@ -4226,24 +4425,63 @@ class StandardTableaux_size(StandardTableaux):
             for st in StandardTableaux(p):
                 yield self.element_class(self, st)
 
-
     def cardinality(self):
-        """
-        Return the cardinality of ``self``.
+        r"""
+        Return the cardinality of number of standard tableaux of size
+        ``n``.
+
+        The number of standard tableaux of `n` is equal to the number of
+        involutions of size `n`. This is a consequence of the symmetry of
+        the RSK correspondence, that if `\sigma \mapsto (P, Q)`, then
+        `\sigma^{-1} \mapsto (Q, P)`. For more information, see
+        :wikipedia:`Robinson-Schensted-Knuth_correspondence#Symmetry`.
+
+        ALGORITHM:
+
+        The algorithm uses the fact that standard tableaux of size
+        ``n`` are in bijection with the involutions of size ``n``,
+        (see page 41 in section 4.1 of [Ful1997]_).  For each number of
+        fixed points, you count the number of ways to choose those
+        fixed points multiplied by the number of perfect matchings on
+        the remaining values.
+
+        REFERENCES:
+
+        .. [Ful1997] Fulton, William.  Young Tableaux.
+           Cambridge University Press, 1997
 
         EXAMPLES::
 
             sage: StandardTableaux(3).cardinality()
             4
             sage: ns = [1,2,3,4,5,6]
-            sage: sts = [StandardTableaux(n) for n in ns]    # indirect doctest
+            sage: sts = [StandardTableaux(n) for n in ns]
             sage: all([st.cardinality() == len(st.list()) for st in sts])
             True
+            sage: StandardTableaux(50).cardinality()
+            27886995605342342839104615869259776
+
+        TESTS::
+
+            sage: def cardinality_using_hook_formula(n):
+            ...       c = 0
+            ...       for p in sage.combinat.partition.Partitions(n):
+            ...           c += StandardTableaux(p).cardinality()
+            ...       return c
+            sage: all([cardinality_using_hook_formula(i) == StandardTableaux(i).cardinality() for i in range(10)])
+            True
         """
-        c = 0
-        for p in sage.combinat.partition.Partitions(self.size):
-            c += StandardTableaux(p).cardinality()
-        return c
+        tableaux_number = self.size % 2  # identity involution
+        fixed_point_numbers = xrange(tableaux_number, self.size + 1 - tableaux_number, 2)
+
+        # number of involution of size "size" (number of way to put
+        # "fixed_point_number" in "size" box * number of involutions
+        # without fixed point of size "size" - "fixed_point_number"
+        for fixed_point_number in fixed_point_numbers:
+            tableaux_number += (self.size.binomial(fixed_point_number) *
+                                prod(range(1, self.size - fixed_point_number, 2)))
+
+        return tableaux_number
 
 
 class StandardTableaux_shape(StandardTableaux):

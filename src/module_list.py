@@ -50,12 +50,12 @@ ginac_depends = [SAGE_INC + '/pynac/ginac.h']
 #########################################################
 
 import ast
-m4ri_extra_compile_args = []
+m4ri_extra_compile_args = ["-std=c99"]
 for line in open(SAGE_INC + "/m4ri/m4ri_config.h"):
     if not line.startswith("#define __M4RI_SIMD_CFLAGS"):
         continue
     m4ri_sse2_cflags = ast.literal_eval(line[len("#define __M4RI_SIMD_CFLAGS"):].strip())
-    m4ri_extra_compile_args = [flag.strip() for flag in m4ri_sse2_cflags.split(" ") if flag.strip()]
+    m4ri_extra_compile_args.extend( [flag.strip() for flag in m4ri_sse2_cflags.split(" ") if flag.strip()] )
     break
 
 singular_libs = ['m', 'readline', 'singular', 'givaro', 'ntl', 'gmpxx', 'gmp']
@@ -379,9 +379,9 @@ ext_modules = [
               sources = ['sage/graphs/base/static_sparse_graph.pyx']),
 
     Extension('sage.graphs.modular_decomposition.modular_decomposition',
-              sources = ['sage/graphs/modular_decomposition/modular_decomposition.pyx'],
-              depends = ['sage/graphs/modular_decomposition/src/dm.c',
-                         'sage/graphs/modular_decomposition/src/dm_english.h']),
+              sources = ['sage/graphs/modular_decomposition/modular_decomposition.pyx',
+                         'sage/graphs/modular_decomposition/src/dm.c'],
+              depends = ['sage/graphs/modular_decomposition/src/dm_english.h']),
 
     Extension('sage.graphs.weakly_chordal',
               sources = ['sage/graphs/weakly_chordal.pyx']),
@@ -443,7 +443,8 @@ ext_modules = [
                          'sage/graphs/planarity_c/stack.h']),
 
     Extension('sage.graphs.graph_decompositions.rankwidth',
-              sources = ['sage/graphs/graph_decompositions/rankwidth.pyx']),
+              sources = ['sage/graphs/graph_decompositions/rankwidth.pyx',
+                         'sage/graphs/graph_decompositions/rankwidth_c/rw.c']),
 
     Extension('sage.graphs.spanning_tree',
               sources = ['sage/graphs/spanning_tree.pyx']),
@@ -1011,7 +1012,7 @@ ext_modules = [
     # TODO -- change to use BLAS at some point.
     Extension('sage.matrix.matrix_integer_dense',
               sources = ['sage/matrix/matrix_integer_dense.pyx'],
-              extra_compile_args = ['-std=c99'] + m4ri_extra_compile_args,
+              extra_compile_args = m4ri_extra_compile_args,
               depends = [SAGE_INC + '/m4ri/m4ri.h'],
               # order matters for cygwin!!
               libraries = ['iml', 'pari', 'gmp', 'm', BLAS, BLAS2]),
@@ -1023,16 +1024,16 @@ ext_modules = [
     Extension('sage.matrix.matrix_mod2_dense',
               sources = ['sage/matrix/matrix_mod2_dense.pyx'],
               libraries = ['gmp','m4ri', 'gd', 'png12', 'z'],
-              extra_compile_args = ['-std=c99'] + m4ri_extra_compile_args,
+              extra_compile_args = m4ri_extra_compile_args,
               depends = [SAGE_INC + "/png.h", SAGE_INC + "/m4ri/m4ri.h"]),
 
     Extension('sage.matrix.matrix_mod2e_dense',
               sources = ['sage/matrix/matrix_mod2e_dense.pyx'],
-              libraries = ['m4rie', 'm4ri', 'givaro', 'ntl', 'gmpxx', 'gmp', 'm', 'stdc++'],
+              libraries = ['m4rie', 'm4ri', 'm'],
               depends = [SAGE_INC + "/m4rie/m4rie.h"],
               include_dirs = [SAGE_INC + '/m4rie'],
-              extra_compile_args = m4ri_extra_compile_args + givaro_extra_compile_args,
-              language="c++"),
+              extra_compile_args = m4ri_extra_compile_args,
+              language="c"),
 
     Extension('sage.matrix.matrix_modn_dense',
               sources = ['sage/matrix/matrix_modn_dense.pyx'],
@@ -1285,7 +1286,7 @@ ext_modules = [
     Extension('sage.modules.vector_mod2_dense',
               sources = ['sage/modules/vector_mod2_dense.pyx'],
               libraries = ['gmp','m4ri', 'png12', 'gd'],
-              extra_compile_args = ['-std=c99'] + m4ri_extra_compile_args,
+              extra_compile_args = m4ri_extra_compile_args,
               depends = [SAGE_INC + "/png.h", SAGE_INC + "/m4ri/m4ri.h"]),
 
     Extension('sage.modules.vector_rational_dense',
@@ -1334,6 +1335,12 @@ ext_modules = [
               ["sage/numerical/backends/ppl_backend.pyx"],
               include_dirs = [SAGE_INC, "sage/c_lib/include/"],
               libraries=["csage", "stdc++"]),
+
+    Extension("sage.numerical.backends.glpk_graph_backend",
+              ["sage/numerical/backends/glpk_graph_backend.pyx"],
+              include_dirs = [SAGE_INC, "sage/c_lib/include/"],
+              language = 'c++',
+              libraries=["csage", "stdc++", "glpk", "gmp", "z"]),
 
     ################################
     ##

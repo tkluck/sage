@@ -18,6 +18,8 @@ from dev_tools import runsnake, import_statements
 
 from html import html
 
+from table import table
+
 from sage_timeit_class import timeit
 
 from edit_module import edit, set_edit_template
@@ -159,8 +161,6 @@ from lazy_attribute import lazy_attribute, lazy_class_attribute
 from lazy_import import lazy_import
 
 from abstract_method import abstract_method
-
-from binary_tree import BinaryTree
 
 from randstate import seed, set_random_seed, initial_seed, current_randstate
 

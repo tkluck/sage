@@ -58,10 +58,20 @@ cdef class ClasscallMetaclass(NestedClassMetaclass):
     and :meth:`__contains__` for the description of the respective
     protocols.
 
-    .. warning:: for technical reasons, ``__classcall__``,
+    .. WARNING::
+
+        For technical reasons, ``__classcall__``,
         ``__classcall_private__``, ``__classcontains__``, and
-        ``__classget__`` must be defined as :func:`staticmethod`'s, even
-        though they receive the class itself as their first argument.
+        ``__classget__`` must be defined as :func:`staticmethod`'s,
+        even though they receive the class itself as their first
+        argument.
+
+    .. WARNING::
+
+        For efficiency reasons, the resolution for the special methods
+        is done once for all, upon creation of the class. Thus, later
+        dynamic changes to those methods are ignored. But see also
+        :meth:`_set_classcall`.
 
     ``ClasscallMetaclass`` is an extension of the base :class:`type`.
 
@@ -108,6 +118,47 @@ cdef class ClasscallMetaclass(NestedClassMetaclass):
 
         self.classcontains = getattr(self, "__classcontains__", None)
         self.classget = getattr(self, "__classget__", None)
+
+    def _set_classcall(cls, function):
+        r"""
+        Change dynamically the classcall function for this class
+
+        EXAMPLES::
+
+            sage: from sage.misc.classcall_metaclass import ClasscallMetaclass
+            sage: class FOO(object):
+            ...       __metaclass__ = ClasscallMetaclass
+            sage: FOO()
+            <__main__.FOO object at ...>
+
+        For efficiency reason, the resolution of the ``__classcall__``
+        method is done once for all, upon creation of the class. Thus,
+        later dynamic changes to this method are ignored by FOO::
+
+            sage: FOO.__classcall__ = ConstantFunction(1)
+            sage: FOO()
+            <__main__.FOO object at ...>
+
+        but not by subclasses created later on::
+
+            sage: class BAR(FOO): pass
+            sage: BAR()
+            1
+
+        To update the ``classcall`` special function for FOO, one
+        should use this setter::
+
+            sage: FOO._set_classcall(ConstantFunction(2))
+            sage: FOO()
+            2
+
+        Note that it has no influence on subclasses::
+
+            sage: class BAR(FOO): pass
+            sage: BAR()
+            1
+        """
+        cls.classcall = function
 
     def __call__(cls, *args, **opts):
         r"""
@@ -263,7 +314,7 @@ cdef class ClasscallMetaclass(NestedClassMetaclass):
             sage: sys.getrefcount(NOCALL())
             1
 
-        We check that exception are correctly handled::
+        We check that exceptions are correctly handled::
 
             sage: class Exc(object):
             ...       __metaclass__ = ClasscallMetaclass
@@ -298,7 +349,7 @@ cdef class ClasscallMetaclass(NestedClassMetaclass):
             #    sage: %timeit [Rien() for i in range(10000)]
             #    125 loops, best of 3: 1.7 ms per loop
             res = <object> PyType_Type.tp_call(cls, args, opts)
-            Py_XDECREF(res) # During the cast to <object> Cython did INCREF(res)
+            Py_XDECREF(<PyObject*>res) # During the cast to <object> Cython did INCREF(res)
             return res
 
     def __get__(cls, instance, owner):
@@ -465,7 +516,7 @@ def typecall(type cls, *args, **opts):
     """
     # See remarks in ClasscallMetaclass.__call__(cls, *args, **opts) for speed.
     res = <object> PyType_Type.tp_call(cls, args, opts)
-    Py_XDECREF(res) # During the cast to <object> Cython did INCREF(res)
+    Py_XDECREF(<PyObject*>res) # During the cast to <object> Cython did INCREF(res)
     return res
 
 # Class for timing::

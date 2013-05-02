@@ -1785,7 +1785,7 @@ class Graphics(SageObject):
         # This option should not be passed on to save().
         linkmode = kwds.pop('linkmode', False)
 
-        if sage.plot.plot.DOCTEST_MODE:
+        if sage.doctest.DOCTEST_MODE:
             kwds.pop('filename', None)
             self.save(DOCTEST_MODE_FILE, **kwds)
         elif sage.plot.plot.EMBEDDED_MODE:
@@ -1938,10 +1938,10 @@ class Graphics(SageObject):
             sage: p._objects[0]._render_on_subplot(subplot)
             sage: p._matplotlib_tick_formatter(subplot, **d)
             (<matplotlib.axes.AxesSubplot object at ...>,
-            <matplotlib.ticker.MaxNLocator instance at ...>,
-            <matplotlib.ticker.MaxNLocator instance at ...>,
-            <matplotlib.ticker.OldScalarFormatter instance at ...>,
-            <matplotlib.ticker.OldScalarFormatter instance at ...>)
+            <matplotlib.ticker.MaxNLocator object at ...>,
+            <matplotlib.ticker.MaxNLocator object at ...>,
+            <matplotlib.ticker.OldScalarFormatter object at ...>,
+            <matplotlib.ticker.OldScalarFormatter object at ...>)
         """
         # This function is created to refactor some code that is repeated
         # in the matplotlib function
@@ -3042,7 +3042,7 @@ class GraphicsArray(SageObject):
             sage: G.show(axes=False)
         """
         if (figsize is not None): self._set_figsize_(figsize)
-        if sage.plot.plot.DOCTEST_MODE:
+        if sage.doctest.DOCTEST_MODE:
             self.save(DOCTEST_MODE_FILE,
                       dpi=dpi, figsize=self._figsize, axes = axes, **args)
             return

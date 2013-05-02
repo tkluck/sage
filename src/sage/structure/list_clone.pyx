@@ -130,9 +130,9 @@ AUTHORS:
 
 
 include "../ext/stdsage.pxi"
-include "../ext/python_list.pxi"
-include "../ext/python_int.pxi"
-include "../ext/python_ref.pxi"
+from cpython.list cimport *
+from cpython.int cimport *
+from cpython.ref cimport *
 
 import sage
 from sage.structure.element cimport Element
@@ -146,10 +146,9 @@ cdef class ClonableElement(Element):
     """
     Abstract class for elements with clone protocol
 
-    This class is a subclasse of
-    :class:`Element<sage.structure.element.Element>` and implements the
-    "prototype" design pattern (see [Pro]_, [GOF]_). The role of this class
-    is:
+    This class is a subclass of :class:`Element<sage.structure.element.Element>`
+    and implements the "prototype" design pattern (see [Pro]_, [GOF]_). The role
+    of this class is:
 
     - to manage copy and mutability and hashing of elements
     - to ensure that at the end of a piece of code an object is restored in a

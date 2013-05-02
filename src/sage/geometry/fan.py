@@ -594,14 +594,17 @@ def Fan(cones, rays=None, lattice=None, check=True, normalize=True,
 
 def FaceFan(polytope, lattice=None):
     r"""
-    Construct the face fan of the given lattice ``polytope``.
+    Construct the face fan of the given rational ``polytope``.
 
     INPUT:
 
     - ``polytope`` -- a :func:`polytope
       <sage.geometry.polyhedron.constructor.Polyhedron>` over `\QQ` or
       a :class:`lattice polytope
-      <sage.geometry.lattice_polytope.LatticePolytopeClass>`.
+      <sage.geometry.lattice_polytope.LatticePolytopeClass>`. A (not
+      necessarily full-dimensional) polytope contaning the origin in
+      its :meth:`relative interior
+      <sage.geometry.polyhedron.base.Polyhedron_base.relative_interior_contains>`.
 
     - ``lattice`` -- :class:`ToricLattice
       <sage.geometry.toric_lattice.ToricLatticeFactory>`, `\ZZ^n`, or any
@@ -665,6 +668,12 @@ def FaceFan(polytope, lattice=None):
         sage: FaceFan(interval_in_QQ2).generating_cones()
         (1-d cone of Rational polyhedral fan in 2-d lattice N,
          1-d cone of Rational polyhedral fan in 2-d lattice N)
+
+        sage: FaceFan(Polyhedron([(-1,0), (1,0), (0,1)])) # origin on facet
+        Traceback (most recent call last):
+        ...
+        ValueError: face fans are defined only for
+        polytopes containing the origin as an interior point!
     """
     from sage.geometry.lattice_polytope import is_LatticePolytope
     interior_point_error = ValueError(
@@ -676,23 +685,25 @@ def FaceFan(polytope, lattice=None):
         cones = (facet.vertices() for facet in polytope.facets())
         rays = polytope.vertices().columns(copy=False)
     else:
-        if not (polytope.is_compact() and polytope.contains(polytope.ambient_space().zero())):
+        origin = polytope.ambient_space().zero()
+        if not (polytope.is_compact() and
+                polytope.relative_interior_contains(origin)):
             raise interior_point_error
         cones = [ [ v.index() for v in facet.incident() ]
                   for facet in polytope.inequalities() ]
         rays = map(vector, polytope.vertices())
-    fan = Fan(cones, rays, lattice=lattice, check=False)
-    fan._is_complete = polytope.dim() == polytope.ambient_dim()
+    fan = Fan(cones, rays, lattice=lattice, check=False,
+              is_complete=(polytope.dim() == polytope.ambient_dim()))
     return fan
 
 
 def NormalFan(polytope, lattice=None):
     r"""
-    Construct the normal fan of the given lattice ``polytope``.
+    Construct the normal fan of the given rational ``polytope``.
 
     INPUT:
 
-    - ``polytope`` -- a :func:`polytope
+    - ``polytope`` -- a full-dimensional :func:`polytope
       <sage.geometry.polyhedron.constructor.Polyhedron>` over `\QQ`
       or:class:`lattice polytope
       <sage.geometry.lattice_polytope.LatticePolytopeClass>`.
@@ -756,12 +767,12 @@ def NormalFan(polytope, lattice=None):
         cones = (vertex.facets() for vertex in polytope.faces(dim=0))
     else:
         if not polytope.is_compact():
-            raise ValueError('the normal fan is only defined for polytopes (compact polyhedra).')
+            raise NotImplementedError('the normal fan is only supported for polytopes (compact polyhedra).')
         cones = [ [ ieq.index() for ieq in vertex.incident() ]
                   for vertex in polytope.vertices() ]
         rays =[ ieq.A() for ieq in polytope.inequalities() ]
-    fan = Fan(cones, rays, lattice=lattice, check=False)
-    fan._is_complete = polytope.dim() == polytope.ambient_dim()
+    fan = Fan(cones, rays, lattice=lattice, check=False,
+              is_complete=(polytope.dim() == polytope.ambient_dim()))
     return fan
 
 

@@ -38,8 +38,9 @@ AUTHOR:
 
 include "../ext/cdefs.pxi"
 include "../ext/stdsage.pxi"
-include "../ext/python_string.pxi"
 include "../ext/random.pxi"
+include "../ext/python_slice.pxi"
+from cpython.string cimport *
 
 cdef extern from "math.h":
     double exp(double)
@@ -1706,7 +1707,7 @@ cdef class TimeSeries:
             sage: set_random_seed(0)
             sage: y = finance.multifractal_cascade_random_walk_simulation(3700,0.02,0.01,0.01,1000,100)
             sage: finance.TimeSeries([z.hurst_exponent() for z in y]).mean()
-            0.579848225779347...
+            0.57984822577934...
 
         We compute the mean Hurst exponent of 100 simulated Markov switching
         multifractal time series.  The Hurst exponent is quite small. ::

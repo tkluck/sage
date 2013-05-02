@@ -22,6 +22,7 @@ from yang_baxter_graph import YangBaxterGraph
 
 #Permutations
 from permutation import Permutation, Permutations, Arrangements, PermutationOptions, CyclicPermutations, CyclicPermutationsOfPartition
+from derangements import Derangements
 
 #PerfectMatchings
 from perfect_matching import PerfectMatching, PerfectMatchings
@@ -78,9 +79,14 @@ from tuple import Tuples, UnorderedTuples
 #Alternating sign matrices
 from alternating_sign_matrix import AlternatingSignMatrices, MonotoneTriangles, ContreTableaux, TruncatedStaircases
 
-# Non Decreasing Parking Functions
+# Parking Functions
 from non_decreasing_parking_function import NonDecreasingParkingFunctions, NonDecreasingParkingFunction
+from parking_functions import ParkingFunctions, ParkingFunction
 
+from ordered_tree import (OrderedTree, OrderedTrees,
+                          LabelledOrderedTree, LabelledOrderedTrees)
+from binary_tree import (BinaryTree, BinaryTrees,
+                         LabelledBinaryTree, LabelledBinaryTrees)
 
 from combination import Combinations
 from cartesian_product import CartesianProduct
@@ -107,7 +113,6 @@ from cluster_algebra_quiver.all import *
 
 #import lrcalc
 
-
 from integer_vector import IntegerVectors
 from integer_vector_weighted import WeightedIntegerVectors
 from integer_vectors_mod_permgroup import IntegerVectorsModPermutationGroup
@@ -126,3 +131,7 @@ from degree_sequences import DegreeSequences
 from cyclic_sieving_phenomenon import CyclicSievingPolynomial, CyclicSievingCheck
 
 from sidon_sets import sidon_sets
+
+# Gelfand-Tsetlin patterns
+from gelfand_tsetlin_patterns import GelfandTsetlinPattern, GelfandTsetlinPatterns
+

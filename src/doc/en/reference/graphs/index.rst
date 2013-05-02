@@ -23,6 +23,7 @@ Constructors and databases
    sage/graphs/graph_generators
    sage/graphs/digraph_generators
    sage/graphs/graph_generators_pyx
+   sage/graphs/hypergraph_generators
    sage/graphs/graph_database
    sage/graphs/isgci
 
@@ -48,6 +49,7 @@ Libraries of algorithms
    sage/graphs/graph_coloring
    sage/graphs/cliquer
    sage/graphs/comparability
+   sage/graphs/line_graph
    sage/graphs/spanning_tree
    sage/graphs/pq_trees
    sage/graphs/trees

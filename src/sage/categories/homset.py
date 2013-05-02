@@ -68,16 +68,16 @@ from sage.categories.category import Category
 import morphism
 from sage.structure.parent import Parent, Set_generic
 from sage.misc.lazy_attribute import lazy_attribute
-from sage.misc.cachefunc import cached_function
 import types
 
 ###################################
 # Use the weak "triple" dictionary
 # introduced in trac ticket #715
+# with weak values, as introduced in
+# trac ticket #14159
 
-from weakref import KeyedRef
-from sage.structure.coerce_dict import signed_id, TripleDict
-_cache = TripleDict(53)
+from sage.structure.coerce_dict import TripleDict
+_cache = TripleDict(53, weak_values=True)
 
 def Hom(X, Y, category=None):
     """
@@ -156,9 +156,17 @@ def Hom(X, Y, category=None):
 
     TESTS:
 
+    Homset are unique parents::
+
+        sage: k = GF(5)
+        sage: H1 = Hom(k,k)
+        sage: H2 = Hom(k,k)
+        sage: H1 is H2
+        True
+
     Some doc tests in :mod:`sage.rings` (need to) break the unique parent
     assumption. But if domain or codomain are not unique parents, then the hom
-    set won't fit. That's to say, the hom set found in the cache will have a
+    set will not fit. That is to say, the hom set found in the cache will have a
     (co)domain that is equal to, but not identic with, the given (co)domain.
 
     By :trac:`9138`, we abandon the uniqueness of hom sets, if the domain or
@@ -216,7 +224,7 @@ def Hom(X, Y, category=None):
     global _cache
     key = (X,Y,category)
     try:
-        H = _cache[key]()
+        H = _cache[key]
     except KeyError:
         H = None
     if H is not None:
@@ -226,7 +234,11 @@ def Hom(X, Y, category=None):
 
     try:
         # Apparently X._Hom_ is supposed to be cached
-        return X._Hom_(Y, category)
+        # but it is not in some cases (e.g. X is a finite field)
+        # To be investigated
+        H = X._Hom_(Y,category)
+        _cache[key] = H
+        return H
     except (AttributeError, TypeError):
         pass
 
@@ -244,7 +256,7 @@ def Hom(X, Y, category=None):
     # Now, as the category may have changed, we try to find the hom set in the cache, again:
     key = (X,Y,category)
     try:
-        H = _cache[key]()
+        H = _cache[key]
     except KeyError:
         H = None
     if H is not None:
@@ -263,7 +275,7 @@ def Hom(X, Y, category=None):
     H = category.hom_category().parent_class(X, Y, category = category)
 
     ##_cache[key] = weakref.ref(H)
-    _cache[key] = KeyedRef(H, _cache.eraser, (signed_id(X),signed_id(Y),signed_id(category)))
+    _cache[key] = H
     return H
 
 def hom(X, Y, f):

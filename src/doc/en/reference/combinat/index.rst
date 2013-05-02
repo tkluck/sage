@@ -16,6 +16,7 @@ Combinatorics
    sage/combinat/core
    sage/combinat/debruijn_sequence
    sage/combinat/degree_sequences
+   sage/combinat/derangements
    sage/combinat/dlx
    sage/combinat/matrices/dlxcpp
    sage/combinat/dyck_word
@@ -30,19 +31,26 @@ Combinatorics
    sage/combinat/enumeration_mod_permgroup
    sage/combinat/restricted_growth
    sage/combinat/yamanouchi
+   sage/combinat/yang_baxter_graph
+   sage/combinat/gelfand_tsetlin_patterns
    sage/combinat/graph_path
    sage/combinat/matrices/latin
    sage/combinat/lyndon_word
    sage/combinat/necklace
    sage/combinat/non_decreasing_parking_function
+   sage/combinat/parking_functions
    sage/combinat/partition
    sage/combinat/partition_tuple
    sage/combinat/permutation
    sage/combinat/perfect_matching
    sage/combinat/q_analogues
+   sage/combinat/q_bernoulli
    sage/combinat/sidon_sets
    sage/combinat/set_partition_ordered
    sage/combinat/set_partition
+   sage/combinat/abstract_tree
+   sage/combinat/ordered_tree
+   sage/combinat/binary_tree
    sage/combinat/skew_partition
    sage/combinat/subset
    sage/combinat/subsets_pairwise

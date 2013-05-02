@@ -24,10 +24,10 @@ EXAMPLES::
 include "../ext/stdsage.pxi"
 include "../ext/cdefs.pxi"
 include "../ext/python.pxi"
-include "../ext/python_list.pxi"
-include "../ext/python_object.pxi"
+from cpython.list cimport *
+from cpython.object cimport *
 include "../ext/python_slice.pxi"
-include "../ext/python_tuple.pxi"
+from cpython.tuple cimport *
 
 import sage.modules.free_module
 import sage.misc.latex
@@ -2146,6 +2146,28 @@ cdef class Matrix(sage.structure.element.Matrix):
             True
         """
         return self*other - other*self
+
+    def anticommutator(self, other):
+        r"""
+        Return the anticommutator ``self`` and ``other``.
+
+        The *anticommutator* of two `n \times n` matrices `A` and `B`
+        is defined as `\{A, B\} := AB + BA` (sometimes this is written as
+        `[A, B]_+`).
+
+        EXAMPLES::
+
+            sage: A = Matrix(ZZ, 2, 2, range(4))
+            sage: B = Matrix(ZZ, 2, 2, [0, 1, 0, 0])
+            sage: A.anticommutator(B)
+            [2 3]
+            [0 2]
+            sage: A.anticommutator(B) == B.anticommutator(A)
+            True
+            sage: A.commutator(B) + B.anticommutator(A) == 2*A*B
+            True
+        """
+        return self*other + other*self
 
     ###################################################
     # Row and column operations

@@ -28,7 +28,7 @@ TODO: - finish integrating tachyon - good default lights, camera
 #*****************************************************************************
 
 
-include "../../ext/python_list.pxi"
+from cpython.list cimport *
 
 import os
 from math import atan2
@@ -1076,7 +1076,8 @@ end_scene""" % (render_params.antialiasing,
         else:
             filename = tmp_filename()
 
-        from sage.plot.plot import EMBEDDED_MODE, DOCTEST_MODE
+        from sage.plot.plot import EMBEDDED_MODE
+        from sage.doctest import DOCTEST_MODE
         ext = None
 
         # Tachyon resolution options
