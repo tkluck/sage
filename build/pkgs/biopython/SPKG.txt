@@ -28,6 +28,10 @@ Source is the same as upstream. Install is via the usual setup.py file.
 
 == Changelog ==
 
+=== biopython-1.61 (Marshall Hampton May 3rd, 2013) ===
+
+ * Update to biopython-1.61, released 5 February 2013.
+
 === biopython-1.60 (John Palmieri, 12 July 2012) ===
 
  * Update to biopython-1.60, which was released June 25, 2012,
