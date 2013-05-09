@@ -95,6 +95,8 @@ __append_to_doc(
      "BidiakisCube",
      "BiggsSmithGraph",
      "BrinkmannGraph",
+     "BrouwerHaemersGraph",
+     "CameronGraph",
      "ChvatalGraph",
      "ClebschGraph",
      "CoxeterGraph",
@@ -125,6 +127,7 @@ __append_to_doc(
      "HoltGraph",
      "LjubljanaGraph",
      "McGeeGraph",
+     "M22Graph",
      "MoebiusKantorGraph",
      "MoserSpindle",
      "NauruGraph",
@@ -957,6 +960,8 @@ class GraphGenerators():
     BidiakisCube             = staticmethod(sage.graphs.generators.smallgraphs.BidiakisCube)
     BiggsSmithGraph          = staticmethod(sage.graphs.generators.smallgraphs.BiggsSmithGraph)
     BrinkmannGraph           = staticmethod(sage.graphs.generators.smallgraphs.BrinkmannGraph)
+    BrouwerHaemersGraph      = staticmethod(sage.graphs.generators.smallgraphs.BrouwerHaemersGraph)
+    CameronGraph             = staticmethod(sage.graphs.generators.smallgraphs.CameronGraph)
     ChvatalGraph             = staticmethod(sage.graphs.generators.smallgraphs.ChvatalGraph)
     ClebschGraph             = staticmethod(sage.graphs.generators.smallgraphs.ClebschGraph)
     CoxeterGraph             = staticmethod(sage.graphs.generators.smallgraphs.CoxeterGraph)
@@ -986,6 +991,7 @@ class GraphGenerators():
     HoltGraph                = staticmethod(sage.graphs.generators.smallgraphs.HoltGraph)
     LjubljanaGraph           = staticmethod(sage.graphs.generators.smallgraphs.LjubljanaGraph)
     McGeeGraph               = staticmethod(sage.graphs.generators.smallgraphs.McGeeGraph)
+    M22Graph                 = staticmethod(sage.graphs.generators.smallgraphs.M22Graph)
     MoebiusKantorGraph       = staticmethod(sage.graphs.generators.smallgraphs.MoebiusKantorGraph)
     MoserSpindle             = staticmethod(sage.graphs.generators.smallgraphs.MoserSpindle)
     NauruGraph               = staticmethod(sage.graphs.generators.smallgraphs.NauruGraph)

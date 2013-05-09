@@ -901,7 +901,7 @@ def orbit_partition(gamma, list_perm=False):
                 seen[i] = 1
         return partition
     else:
-        n = len(gamma.list())
+        n = len(gamma.domain())
         l = []
         for i in range(1,n+1):
             orb = gamma.orbit(i)
@@ -911,35 +911,6 @@ def orbit_partition(gamma, list_perm=False):
                 if i[j] == n:
                     i[j] = 0
         return l
-
-def perm_group_elt(lperm):
-    """
-    Given a list permutation of the set 0, 1, ..., n-1, returns the
-    corresponding PermutationGroupElement where we take 0 = n.
-
-    EXAMPLE::
-
-        sage: from sage.groups.perm_gps.partn_ref.refinement_graphs import perm_group_elt
-        sage: perm_group_elt([0,2,1])
-        (1,2)
-        sage: perm_group_elt([1,2,0])
-        (1,2,3)
-    """
-    from sage.groups.perm_gps.permgroup_named import SymmetricGroup
-    n = len(lperm)
-    S = SymmetricGroup(n)
-    Part = orbit_partition(lperm, list_perm=True)
-    gens = []
-    for z in Part:
-        if len(z) > 1:
-            if 0 in z:
-                zed = z.index(0)
-                generator = z[:zed] + [n] + z[zed+1:]
-                gens.append(tuple(generator))
-            else:
-                gens.append(tuple(z))
-    E = S(gens)
-    return E
 
 def coarsest_equitable_refinement(CGraph G, list partition, bint directed):
     """

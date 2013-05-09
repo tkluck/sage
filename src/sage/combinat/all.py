@@ -46,7 +46,7 @@ from partition import partitions_set, RestrictedPartitions, number_of_partitions
      partitions_greatest, partitions_greatest_eq, partitions_tuples,\
      number_of_partitions_tuples, partition_power
 
-from partition_tuple import PartitionTuple, PartitionTuples
+from sage.combinat.partition_tuple import PartitionTuple, PartitionTuples
 from skew_partition import SkewPartition, SkewPartitions
 
 #Partition algebra
@@ -61,7 +61,7 @@ from tableau import Tableau, SemistandardTableau, StandardTableau, \
 from skew_tableau import SkewTableau, StandardSkewTableaux, SemistandardSkewTableaux
 from ribbon import Ribbon, StandardRibbons
 from ribbon_tableau import RibbonTableaux, RibbonTableau, MultiSkewTableau, SemistandardMultiSkewTableaux
-from tableau_tuple import TableauTuple, StandardTableauTuple, TableauTuples, StandardTableauTuples
+from sage.combinat.tableau_tuple import TableauTuple, StandardTableauTuple, TableauTuples, StandardTableauTuples
 
 #Words
 from words.all import *
@@ -77,7 +77,7 @@ from iet.all import *
 from tuple import Tuples, UnorderedTuples
 
 #Alternating sign matrices
-from alternating_sign_matrix import AlternatingSignMatrices, MonotoneTriangles, ContreTableaux, TruncatedStaircases
+from alternating_sign_matrix import AlternatingSignMatrix, AlternatingSignMatrices, MonotoneTriangles, ContreTableaux, TruncatedStaircases
 
 # Parking Functions
 from non_decreasing_parking_function import NonDecreasingParkingFunctions, NonDecreasingParkingFunction
@@ -119,6 +119,7 @@ from integer_vectors_mod_permgroup import IntegerVectorsModPermutationGroup
 
 from finite_class import FiniteCombinatorialClass
 
+from q_analogues import gaussian_binomial, q_binomial
 
 from species.all import *
 
