@@ -20,17 +20,28 @@
 #*****************************************************************************
 
 """
+NOTE:
+
+For historical reasons, this script replicates much of Sage's current doctest
+framework. At the time of writing it, the doctesting framework did not suffice
+for our purpose. The tests are executed on a per-method basis, which makes it
+easier to avoid side effects of caching.
+
+TODO:
+
+Try to use Sage's doctest framework in version 3.0 of this spkg.
+
 USAGE:
 
 In a Sage shell, run spkg-check. If SAGE_CHECK is "yes",
 the script will be automatically executed when the package
 is installed.
 
-The script does parallel testing and uses 1/3 of the available
-CPUs. If this seems to much, the number of parallel tests
-can be restricted by providing the environment variable SAGE_NUM_THREADS
-with an integer value. Note that each test uses at most three
-processes, namely Sage, GAP and Singular.
+The script does parallel testing, the number of thready being given
+by the environment variable SAGE_NUM_THREADS, which is automatically set when
+exporting MAKE="make -jN".
+
+Note that each test uses at most three processes, namely Sage, GAP and Singular.
 
 """
 
@@ -200,14 +211,7 @@ def get_docstring(f,cl):
 
 import os, sys
 from sage.all import gap,singular
-NCPUS = os.environ.get('SAGE_NUM_THREADS')
-if not NCPUS:
-    NCPUS = int(multiprocessing.cpu_count()/3)+1
-else:
-    try:
-        NCPUS = int(NCPUS)
-    except:
-        NCPUS = int(multiprocessing.cpu_count()/3)+1
+NCPUS = int(os.environ.get('SAGE_NUM_THREADS'))
 if NCPUS>1 and gap._local_tmpfile()==singular._local_tmpfile():
     print "WARNING: You should apply the patch of ticket #10004."
     print "         Without the patch, parallel testing isn't safe."
