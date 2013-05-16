@@ -762,7 +762,6 @@ TESTS = {
 #cargs -std=c99 -O3 -ggdb
 #cinclude $SAGE_SRC/sage/libs/flint $SAGE_LOCAL/include/FLINT
 #clib flint
-#cfile $SAGE_SRC/sage/libs/flint/fmpq_poly.c
 
 from sage.rings.rational cimport Rational
 from sage.rings.polynomial.polynomial_rational_flint cimport Polynomial_rational_flint

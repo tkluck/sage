@@ -24,6 +24,8 @@ cdef extern from "../../../local/include/gurobi_c.h":
 
      int GRBloadenv(GRBenv **, char *)
      int GRBnewmodel(GRBenv *env, GRBmodel **modelP, char *Pname, int numvars, double *obj, double *lb, double *ub, char *vtype, char **varnames)
+     GRBmodel * GRBcopymodel (GRBmodel *model)
+
      int GRBaddvar(GRBmodel *model, int numnz, int *vind, double *vval, double obj, double lb, double ub, char vtype, char *varname)
      int GRBaddvars (GRBmodel*model, intnumvars, intnumnz, int*vbeg, int*vind, double*vval, double*obj, double*lb, double*ub, char*vtype, char** varnames )
 
@@ -60,10 +62,14 @@ cdef extern from "../../../local/include/gurobi_c.h":
 
      int GRBwrite (GRBmodel*model, char* filename)
 
+     int GRBgetdblparam(GRBenv *env, char * attrname, double * value)
+     int GRBgetintparam(GRBenv *env, char * attrname, int * value)
+     int GRBgetstrparam(GRBenv *env, char * attrname, char * value)
+     int GRBsetdblparam(GRBenv *env, char * attrname, double value)
      int GRBsetintparam(GRBenv *env, char * attrname, int value)
+     int GRBsetstrparam(GRBenv *env, char * attrname, char * value)
 
      GRBenv * GRBgetenv (GRBmodel * model )
-
 
      int GRBgetconstrs (GRBmodel * model, int * numnzP, int * cbeg, int * cind, double * cval, int start, int len )
 
@@ -97,6 +103,7 @@ cdef class GurobiBackend(GenericBackend):
 
     cdef GRBenv * env
     cdef GRBmodel ** model
+    cdef GurobiBackend copy(self)
 
     cdef int num_vars
 

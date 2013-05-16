@@ -36,5 +36,9 @@ from generic.all import *
 
 from toric.all import *
 
+from affine.all import *
+
+from projective.all import *
+
 
 
