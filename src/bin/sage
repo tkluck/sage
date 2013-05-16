@@ -197,7 +197,6 @@ usage_advanced() {
     echo "  -bdist VER          -- build a binary distribution of Sage"
     echo "  -combinat [...]     -- run sage-combinat patch management script"
     echo "  -crap sage-ver.tar  -- detect suspicious garbage in sage source tarball"
-    echo "  -merge              -- run Sage's automatic merge and test script"
     echo "  -pkg <dir>          -- create Sage package dir.spkg from a given directory"
     echo "  -pkg_nc <dir>       -- as -pkg, but do not compress the package"
     echo "  -rsyncdist VER      -- build an rsyncable source distribution of Sage (you"
@@ -556,11 +555,6 @@ EOF
     exit $status
 fi
 
-if [ "$1" = '-merge' -o "$1" = '--merge' ]; then
-    shift
-    exec sage-apply-ticket "$@"
-fi
-
 #####################################################################
 # Test coverage of a module?
 #####################################################################
@@ -868,7 +862,7 @@ fi
 
 if [ "$1" = "-docbuild" -o "$1" = "--docbuild" ]; then
     shift
-    exec python "$SAGE_SRC/doc/common/builder.py" "$@"
+    exec python "$SAGE_DOC/common/builder.py" "$@"
 fi
 
 if [ "$1" = '-gdb' -o "$1" = "--gdb" ]; then

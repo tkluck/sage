@@ -520,7 +520,7 @@ fi
 # * If "make" doesn't understand the -q option (although we require
 #   GNU make, which supports it), it should exit with a non-zero status
 #   which is not a problem.
-if $MAKE -q "$@"; then
+if $MAKE -q "$@" >/dev/null 2>/dev/null; then
     echo "Nothing to (re)build / all up-to-date."
     exit 0
 fi
