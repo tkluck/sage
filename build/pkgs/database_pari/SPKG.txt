@@ -1,0 +1,34 @@
+= database_pari =
+
+== Description ==
+
+The collection of optional PARI packages elldata, seadata, galpol,
+nftables (galdata is included in the standard PARI spkg).
+See http://pari.math.u-bordeaux.fr/packages.html
+
+== License ==
+
+GNU General Public License (GPL version 2 or any later version).
+
+== SPKG Maintainers ==
+
+* Jeroen Demeyer
+
+== Upstream Contact ==
+
+http://pari.math.u-bordeaux.fr/
+
+== Dependencies ==
+
+* Installation: None
+* Runtime: PARI
+
+== Special Update/Build Instructions ==
+
+Simply download the four mentioned tarballs, extract them and put them
+inside "src".
+
+== Changelog ==
+
+=== database_pari-20130516 (Jeroen Demeyer 16 May 2013) ===
+ * Trac #14596: initial release.
