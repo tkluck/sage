@@ -135,6 +135,9 @@ SAGE_ROOT/local/share/doc/p_group_cohomology/html/.
     - Change tests according to GAP's changed random generator
 
     Miscellaneae:
+    - Increase optimization level. If the gcc version is too old, David
+      Green's programs won't work in this optimization level. However,
+      functionality will be tested before finishing installation of the package.
     - Remove the indentation parameter of RESL. The protocol output first prints
       a short descriptor of the instance whose methods are being called (the descriptor
       is only printed when the active instance changes).

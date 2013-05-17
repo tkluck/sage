@@ -50,6 +50,10 @@ $MKDIR bin
 $MAKE
 if [ $? -ne 0 ]; then
    echo "Error building pGroupCohomology."
+   echo "You are using" $CC `$CC -dumpversion`
+   echo "If this is older than gcc 4.6, then please consider upgrading your system-wide gcc,"
+   echo "or install Sage with its gcc spkg."
+   echo "If your gcc version is more recent, then please inform the author."
    exit 1
 fi
 
@@ -60,6 +64,10 @@ if [ $? -ne 0 ]; then
 fi
 
 python setup.py install
+if [ $? -ne 0 ]; then
+   echo "Error installing Cython code."
+   exit 1
+fi
 
 # Perhaps we are supposed to build the docs?
 if [ "x$SAGE_SPKG_INSTALL_DOCS" = xyes ] ; then

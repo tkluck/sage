@@ -76,8 +76,15 @@ The latest version (2.1.4) can be installed on the command line
 
     sage -i http://sage.math.washington.edu/home/SimonKing/Cohomology/p_group_cohomology-2.1.4.spkg
 
-We are sorry for the long installation time. Since version 2.1, the package
-works both on little and big endian machines.
+.. NOTE::
+
+    In version 2.1.4, the optimization level has been increased, which
+    actually gives faster code. However, this requires a relatively recent
+    version of gcc. With older compiler versions, installation of this package
+    will fail with a warning hinting to upgrade gcc.
+
+Since version 2.1, the package works both on little and big endian
+machines. We are sorry for the long installation time.
 
 Testing
 -------
@@ -135,7 +142,7 @@ Versions
 
   * v2.1.4: Consequently compute parameters for the *complete* cohomology
     ring rather than only for the ring approximation. Better portability
-    by using os.path. Remove SAGE_DATA by SAGE_SHARE. Use urllib2.
+    by using os.path. Replace SAGE_DATA by SAGE_SHARE. Use urllib2.
     Protocol output tells which instance's method is being called.
   * v2.1.3: Improved heuristics to choose between Hilbert-Poincare
     and Symonds criteria. Cope with Cython's new "name mangling" for
