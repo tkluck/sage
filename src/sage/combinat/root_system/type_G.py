@@ -11,7 +11,7 @@ Root system data for type G
 #*****************************************************************************
 import ambient_space
 from sage.sets.family import Family
-
+from sage.combinat.root_system.root_lattice_realizations import RootLatticeRealizations
 class AmbientSpace(ambient_space.AmbientSpace):
     """
     EXAMPLES::
@@ -82,6 +82,30 @@ class AmbientSpace(ambient_space.AmbientSpace):
         return Family({ 1: self([1,0,-1]),
                         2: self([2,-1,-1])})
 
+    __doc__ += """
+    By default, this ambient space uses the barycentric projection for plotting::
+
+        sage: L = RootSystem(["G",2]).ambient_space()
+        sage: e = L.basis()
+        sage: L._plot_projection(e[0])
+        (1/2, 989/1142)
+        sage: L._plot_projection(e[1])
+        (-1, 0)
+        sage: L._plot_projection(e[2])
+        (1/2, -989/1142)
+        sage: L = RootSystem(["A",3]).ambient_space()
+        sage: l = L.an_element(); l
+        (2, 2, 3, 0)
+        sage: L._plot_projection(l)
+        (0, -1121/1189, 7/3)
+
+    .. SEEALSO::
+
+        - :meth:`sage.combinat.root_system.root_lattice_realizations.RootLatticeRealizations.ParentMethods._plot_projection`
+    """
+    _plot_projection = RootLatticeRealizations.ParentMethods.__dict__['_plot_projection_barycentric']
+
+
 from cartan_type import CartanType_standard_finite, CartanType_simple, CartanType_crystalographic
 class CartanType(CartanType_standard_finite, CartanType_simple, CartanType_crystalographic):
     def __init__(self):
@@ -103,7 +127,7 @@ class CartanType(CartanType_standard_finite, CartanType_simple, CartanType_cryst
             sage: ct.is_simply_laced()
             False
             sage: ct.dual()
-            ['G', 2]^*
+            ['G', 2] relabelled by {1: 2, 2: 1}
             sage: ct.affine()
             ['G', 2, 1]
 
@@ -122,7 +146,7 @@ class CartanType(CartanType_standard_finite, CartanType_simple, CartanType_cryst
             sage: latex(CartanType(['G',2]))
             G_2
             sage: latex(CartanType(['G',2]).dual())
-            G_2^\vee
+            G_2 \text{ relabelled by } \left\{1 : 2, 2 : 1\right\}
         """
         return "G_2"
 
@@ -186,6 +210,31 @@ class CartanType(CartanType_standard_finite, CartanType_simple, CartanType_cryst
             3   4
         """
         return "  3\nO=<=O\n%s   %s"%tuple(label(i) for i in (1,2))
+
+    def dual(self):
+        r"""
+        Return the dual Cartan type.
+
+        This uses that `G_2` is self-dual up to relabelling.
+
+        EXAMPLES::
+
+            sage: G2 = CartanType(['G',2])
+            sage: G2.dual()
+            ['G', 2] relabelled by {1: 2, 2: 1}
+
+            sage: G2.dynkin_diagram()
+              3
+            O=<=O
+            1   2
+            G2
+            sage: G2.dual().dynkin_diagram()
+              3
+            O=<=O
+            2   1
+            G2 relabelled by {1: 2, 2: 1}
+        """
+        return self.relabel({1:2, 2:1})
 
 # For unpickling backward compatibility (Sage <= 4.1)
 from sage.structure.sage_object import register_unpickle_override

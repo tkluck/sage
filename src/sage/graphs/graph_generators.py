@@ -171,6 +171,7 @@ __append_to_doc(
      "RingedTree",
      "line_graph_forbidden_subgraphs",
      "PermutationGraph",
+     "SymplecticGraph",
      "trees"])
 
 __doc__ += """
@@ -290,11 +291,9 @@ Functions and methods
 ###########################################################################
 
 # import from Python standard library
-from math import sin, cos, pi
 
 # import from Sage library
 import graph
-from sage.misc.randstate import current_randstate
 
 class GraphGenerators():
     r"""
@@ -946,6 +945,7 @@ class GraphGenerators():
     OddGraph               = staticmethod(sage.graphs.generators.families.OddGraph)
     PaleyGraph             = staticmethod(sage.graphs.generators.families.PaleyGraph)
     PermutationGraph       = staticmethod(sage.graphs.generators.families.PermutationGraph)
+    SymplecticGraph        = staticmethod(sage.graphs.generators.families.SymplecticGraph)
     HanoiTowerGraph        = staticmethod(sage.graphs.generators.families.HanoiTowerGraph)
     line_graph_forbidden_subgraphs = staticmethod(sage.graphs.generators.families.line_graph_forbidden_subgraphs)
     trees                  = staticmethod(sage.graphs.generators.families.trees)
@@ -1139,7 +1139,6 @@ def canaug_traverse_vert(g, aut_gens, max_verts, property, dig=False, loops=Fals
         Digraph on 2 vertices
         Digraph on 2 vertices
     """
-    from sage.graphs.generic_graph_pyx import binary
     from sage.groups.perm_gps.partn_ref.refinement_graphs import search_tree
 
 
@@ -1326,7 +1325,6 @@ def canaug_traverse_edge(g, aut_gens, property, dig=False, loops=False, implemen
         Digraph on 3 vertices
         Digraph on 3 vertices
     """
-    from sage.graphs.generic_graph_pyx import binary
     from sage.groups.perm_gps.partn_ref.refinement_graphs import search_tree
     if not property(g):
         return
