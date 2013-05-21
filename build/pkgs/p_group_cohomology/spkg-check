@@ -20,18 +20,28 @@
 #*****************************************************************************
 
 """
+NOTE:
+
+For historical reasons, this script replicates much of Sage's current doctest
+framework. At the time of writing it, the doctesting framework did not suffice
+for our purpose. The tests are executed on a per-method basis, which makes it
+easier to avoid side effects of caching.
+
+TODO:
+
+Try to use Sage's doctest framework in version 3.0 of this spkg.
+
 USAGE:
 
 In a Sage shell, run spkg-check. If SAGE_CHECK is "yes",
 the script will be automatically executed when the package
 is installed.
 
-The script does parallel testing and uses 1/3 of the available
-CPUs. If this seems to much, the number of parallel tests
-can be restricted by providing the environment variable SAGE_NUM_THREADS
-with an integer value, or by defining the environment variable MAKE as
-`make -jN`, where N is an integer. Note that each test uses at most three
-processes, namely Sage, GAP and Singular.
+The script does parallel testing, the number of thready being given
+by the environment variable SAGE_NUM_THREADS, which is automatically set when
+exporting MAKE="make -jN".
+
+Note that each test uses at most three processes, namely Sage, GAP and Singular.
 
 """
 
@@ -70,8 +80,9 @@ def get_classes(f,root):
     name of the class (including the given module name ``root``).
 
     """
+    import os
     m = []
-    L = f.split('\n')
+    L = f.split(os.linesep)
     for i in range(len(L)):
         s = L[i].strip()
         while '  ' in s:
@@ -104,13 +115,14 @@ def get_methods(f,cl,nextcl=None, funcs = False):
     name of the method (including the name of the given class).
 
     """
+    import os
     m = []
     ind = []
     j,root = cl
     if nextcl is not None:
-        L = f.split('\n')[j:nextcl[0]] #file(f).read().split('\n')[j+1:nextcl[0]]
+        L = f.split(os.linesep)[j:nextcl[0]] #file(f).read().split('\n')[j+1:nextcl[0]]
     else:
-        L = f.split('\n')[j:] #file(f).read().split('\n')[j+1:]
+        L = f.split(os.linesep)[j:] #file(f).read().split('\n')[j+1:]
     if not funcs:
         basic_ind = len(L[0])-len(L[0].lstrip())
         # first, get the right indentation level for methods of cl
@@ -161,8 +173,9 @@ def get_docstring(f,cl):
     The docstring of the given class, method or module.
 
     """
+    import os
     j,root = cl[:2]
-    L = f.split('\n')[j:]
+    L = f.split(os.linesep)[j:]
     OUT = []
     if not L:
         return ''
@@ -190,22 +203,15 @@ def get_docstring(f,cl):
         p = L.pop(0)
         ps = p.strip()
         if (doub and ps.endswith('"""')):
-            return '\n'.join(OUT)
+            return os.linesep.join(OUT)
         elif ((not doub) and ps.endswith("'''")):
-            return '\n'.join(OUT)
+            return os.linesep.join(OUT)
         OUT.append(p)
     return ''
 
 import os, sys
 from sage.all import gap,singular
-NCPUS = os.environ.get('SAGE_NUM_THREADS')
-if not NCPUS:
-    NCPUS = int(multiprocessing.cpu_count()/3)+1
-else:
-    try:
-        NCPUS = int(NCPUS)
-    except:
-        NCPUS = int(multiprocessing.cpu_count()/3)+1
+NCPUS = int(os.environ.get('SAGE_NUM_THREADS'))
 if NCPUS>1 and gap._local_tmpfile()==singular._local_tmpfile():
     print "WARNING: You should apply the patch of ticket #10004."
     print "         Without the patch, parallel testing isn't safe."
@@ -229,6 +235,7 @@ def one_test(s,cl,lfd_nr):
     ``t`` is the wall time in seconds required for that test.
 
     """
+    import os
     if not s:
         print cl+' has no docstring'
         return ('',cl+': No docstring',0.0)
@@ -242,22 +249,22 @@ def one_test(s,cl,lfd_nr):
         prob = ''
     else:
         prob = cl+' seems not to be tested in its docstring'
-        for l in s.split('\n'):
+        for l in s.split(os.linesep):
             l = l.strip()
             if l.startswith('sage: ') or l.startswith('... '):
                 if cl.split('.')[-1] in l:
                     prob = ''
                     break
     from sage.all import walltime
-    f = file(test_dir+'/file_%d.py'%lfd_nr,'w')
-    f.write('"""\n'+s+'\n"""')
+    f = file(os.path.join(test_dir,'file_%d.py'%lfd_nr),'w')
+    f.write('# -*- coding: utf-8 -*-'+os.linesep+'r"""'+os.linesep+s+os.linesep+'"""'+os.linesep)
     os.fsync(f)
     f.close()
     wt = walltime()
-    Res = os.popen('sage -t -optional -long '+f.name).read()
+    Res = os.popen('sage -t --long '+f.name).read()
     wt = walltime(wt)
     os.unlink(f.name)
-    if Res.split('\n')[-3]!='All tests passed!':
+    if 'All tests passed!' not in Res.split(os.linesep)[-6:]:
         print cl + " fails"
         return (Res,prob,wt)
     print cl + " passes in %.2f s"%wt
@@ -333,12 +340,11 @@ def test_all(d):
     Test all '.py' and '.pyx' files in the given directory whose name
     does not start with a dot.
     """
-    print 'Will use',NCPUS, 'parallel processes\n'
-    if not d.endswith('/'):
-        d = d+'/'
     import os
+    print 'Will use',NCPUS, 'parallel processes'+os.linesep
     D = os.listdir(d)
-    base_name = d.split('/')[-2]
+    base_name = os.path.split(d)[0]
+    base_name = os.path.split(base_name)[1]
     to_do = []
     for n in D:
         if n=='__init__.py' or n=='all.py':
@@ -368,7 +374,7 @@ def test_all(d):
     else:
         print "-------------------------------------------------------------"
         print "All doc tests passed!"
-        print "-------------------------------------------------------------\n"
+        print "-------------------------------------------------------------"+os.linesep
     if PROB:
         print "The following items may be insufficiently tested:"
         for a,b in sorted(PROB):

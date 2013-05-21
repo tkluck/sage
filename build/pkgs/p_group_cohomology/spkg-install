@@ -25,7 +25,7 @@ if [ "$SAGE_LOCAL" = "" ]; then
    exit 1
 fi
 
-SMALL_GROUPS=`echo "SmallGroup(13,1); quit;" | $SAGE_ROOT/sage -gap -b -T | grep "13"`
+SMALL_GROUPS=`echo "SmallGroup(13,1); quit;" | gap -b -T | grep "13"`
 if [ "$SMALL_GROUPS" = "" ]; then
    echo "It seems that GAP's SmallGroups library is missing."
    echo "One way to install it is by doing"
@@ -42,15 +42,18 @@ else
    DARWIN64=""; export DARWIN64;
 fi
 
-# MeatAxe would fail to build parallely. Therefore, although it is probably bad style:
-OLD_MAKE="$MAKE";
-MAKE=make; export MAKE;
-
 cd src
+
+$MKDIR lib
+$MKDIR bin
 
 $MAKE
 if [ $? -ne 0 ]; then
    echo "Error building pGroupCohomology."
+   echo "You are using" $CC `$CC -dumpversion`
+   echo "If this is older than gcc 4.6, then please consider upgrading your system-wide gcc,"
+   echo "or install Sage with its gcc spkg."
+   echo "If your gcc version is more recent, then please inform the author."
    exit 1
 fi
 
@@ -60,10 +63,11 @@ if [ $? -ne 0 ]; then
    exit 1
 fi
 
-#rm pGroupCohomology/*.c
-MAKE="$OLDMAKE"; export MAKE;
-DISTUTILS_DEBUG='debug'
 python setup.py install
+if [ $? -ne 0 ]; then
+   echo "Error installing Cython code."
+   exit 1
+fi
 
 # Perhaps we are supposed to build the docs?
 if [ "x$SAGE_SPKG_INSTALL_DOCS" = xyes ] ; then
@@ -75,8 +79,8 @@ if [ "x$SAGE_SPKG_INSTALL_DOCS" = xyes ] ; then
 	    echo "Error building p_group_cohomology docs."
 	    exit 1
     fi
-    mkdir -p $SAGE_ROOT/local/share/doc/p_group_cohomology
-    cp -r output/html/en/reference $SAGE_ROOT/local/share/doc/p_group_cohomology/html
+    mkdir -p $SAGE_ROOT/local/share/doc/p_group_cohomology/html/
+    cp -r output/html/en/reference/* $SAGE_ROOT/local/share/doc/p_group_cohomology/html/
     if [ $? -ne 0 ]; then
 	    echo "Error copying docs."
 	    exit 1

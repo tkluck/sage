@@ -102,9 +102,9 @@ displayed on screen and can also be find in SAGEROOT/install.log.
 
 The script allows for parallel testing. By default, the number of threads
 equals one third of the available CPUs. The default can be changed by
-exporting the environment variable SAGE_NUM_THREAD (for example:
-``export SAGE_NUM_THREADS=2`` or the environment variable MAKE (for
-example: ``export MAKE="make -j2"``.
+exporting the environment variable SAGE_NUM_THREADS (for example:
+``export SAGE_NUM_THREADS=2``) or by giving a number of parallel processes
+for ``make``, such as ``export MAKE="make -j4"``.
 
 == Documentation ==
 
@@ -115,6 +115,38 @@ SAGE_ROOT/local/share/doc/p_group_cohomology/html/.
 
 == Changelog ==
 
+  * 2.1.4 (Simon King, April 2013):
+    Computational techniques:
+    - find_small_last_parameter will now construct a parameter of the cohomology
+      ring, by studying the restriction to maximal elementary abelian
+      subgroups. In previous version, we could only find parameters of the ring
+      approximation. The additional advantage: The computations are easier, since
+      the complicated relations of the ring approximation do not need to be
+      considered.
+    - Compute a complete Gröbner basis, if there was no relation in the previous
+      degree. This is an essential speed-up for computing the mod-3 cohomology of
+      the third Janko group.
+
+    Coping with changes in Sage:
+    - tmp_filename -> tmp_dir
+    - SAGE_DATA -> SAGE_SHARE
+    - Replace double underscore by single underscore attributes, to avoid name
+      mangling
+    - Change tests according to GAP's changed random generator
+
+    Miscellaneae:
+    - Increase optimization level. If the gcc version is too old, David
+      Green's programs won't work in this optimization level. However,
+      functionality will be tested before finishing installation of the package.
+    - Remove the indentation parameter of RESL. The protocol output first prints
+      a short descriptor of the instance whose methods are being called (the descriptor
+      is only printed when the active instance changes).
+    - Use utilities from os.path, for better portability
+    - Unlink symbolic links before saving data
+    - Use urllib2
+    - Some methods changed from temporary_result to permanent_result. But old data
+      remain legible. Most important example: Construction of parameters.
+    - Address of Simon King changed from Galway to Jena
   * 2.1.3 (Simon King, July 2012):
     - Improve the heuristic of choosing between Hilbert-Poincare and Symonds
       criteria. If the computation of parameters in small degrees by lifting
