@@ -1,3 +1,55 @@
+= polymake =
+
+== Description ==
+
+polymake started out as a tool for the algorithmic treatment of convex polyhedra. By now it also deals with finite simplicial complexes, tight spans of finite metric spaces, polyhedral surfaces, and other objects.
+
+Website: http://www.math.tu-berlin.de/polymake/
+
+== License ==
+
+GPL V2
+
+== SPKG Maintainers ==
+
+ * Michael Abshoff
+ * Marshall Hampton
+
+== Upstream Contact ==
+
+ *  Ewgenij Gawrilow and Michael Joswig - see http://www.math.tu-berlin.de/polymake/
+
+== Dependencies ==
+
+ * gmp
+ * cddlib
+ * lrs
+
+== Special Update/Build Instructions ==
+
+See blow, but the info is outdated and at least partially wrong.
+
+== Changelog ==
+
+=== polymake-2.12 (Timo Kluck, February 28th, 2013) ===
+
+ * upgrade to 2.12; depends on boost_cropped >= 1.52.0
+
+=== polymake-2.2.p5 (Michael Abshoff, December 24th, 2008) ===
+
+ * convert spkg-install to bash script
+ * fix version detection of gmp and cddlib so that things do not break with version changes
+ * write a proper SPKG.txt
+ * move sources to src 
+
+=== polymake-2.2.p4 ===
+
+ * previous changes lost to history
+
+--------------------------------------------------------------------------
+The info below is outdated and needs to be cleaned up
+--------------------------------------------------------------------------
+
 Changes:
 
  1) I deleted the gmp and cddlib directories; but extract them from
@@ -5,7 +57,7 @@ Changes:
 
  2) If you update gmp or cddlib, you *must* change the spkg-install in
     this directory (because it refs specific version numbers).
-
+ 
  3) I modified support/configure.pl so it works non-interactively
     in the context of SAGE.  Here are the diffs:
 
@@ -36,7 +88,7 @@ Notes:
 
  (2) the make process gets confused and corrupts arguments
      passed in that involve environment variables; so make
-     them into exact paths somehow, e.g.,
+     them into exact paths somehow, e.g., 
 
        -I/home/was/s/local
 
@@ -60,7 +112,7 @@ Which additional C++ compiler flags should be used (e.g. choosing specific CPU m
 
 Which additional C compiler flags should be used? [-I/home/was/s/local/include]
 
-Which additional linker flags should be used? [none]
+Which additional linker flags should be used? [none] 
 
 -------
 
@@ -73,10 +125,10 @@ ln -s $SAGE_LOCAL/lib/libcdd.a .
 
 ----------------
 
-For some reason
+For some reason 
 
 was@sha:~/s/spkg/build/polymake-2.2/build/external/cdd/src/ext_lib/cdd$ mv globals_gmp.h globals_gmp.h.orig
 was@sha:~/s/spkg/build/polymake-2.2/build/external/cdd/src/ext_lib/cdd$ touch globals_gmp.h
-was@sha:~/s/spkg/build/polymake-2.2/build/external/cdd/src/ext_lib/cdd$
+was@sha:~/s/spkg/build/polymake-2.2/build/external/cdd/src/ext_lib/cdd$                       
 
 
